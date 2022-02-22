@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 3.16.3 )
-project( OpenGLTesting )
+project( OpenGLTexture )
 
 
 set ( PROJECT_VERSION_MAJOR 0 )
@@ -8,15 +8,17 @@ set ( CMAKE_CXX_STANDARD 17 )
 set ( CMAKE_BUILD_TYPE Debug )
 set ( CMAKE_VERBOSE_MAKEFILE true )
 
-
-
-add_library(glad "${CMAKE_SOURCE_DIR}/include/glad/glad.h" "${CMAKE_SOURCE_DIR}/src/glad.c")
+add_library(
+		glad 
+		"${CMAKE_SOURCE_DIR}/include/glad/glad.h"
+		"${CMAKE_SOURCE_DIR}/src/glad.c"
+	)
 
 include_directories( include )
 set ( 
 		SRC_FILES 
-			main.cpp
-			src/util.cpp
+		main.cpp
+		src/util.cpp
 	)
 
 set( MYAPP "${CMAKE_PROJECT_NAME}-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}" )
