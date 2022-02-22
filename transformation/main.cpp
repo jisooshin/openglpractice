@@ -9,8 +9,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600 
+#define WINDOW_WIDTH 300
+#define WINDOW_HEIGHT 300 
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -130,8 +130,10 @@ int main()
 
 		glm::mat4 trans = glm::mat4(1.0f);
 		trans = glm::translate(trans, glm::vec3(0.1f, -0.2f, 0.0f));
-		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+		trans = glm::rotate(trans, 3 * (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
 
+		float value = (sin((float)glfwGetTime()) * 0.5) + 0.5;
+		myShader.setFloat("coeff", value);
 		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
