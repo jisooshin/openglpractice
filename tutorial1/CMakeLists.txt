@@ -1,31 +1,35 @@
 cmake_minimum_required( VERSION 3.16.3 )
-project( 
-	OpenGLTesting 
-	VERSION 0.1 
-	PROJECT_DESCRIPTION "예시" 
-	LANGUAGE CXX
-)
+project( OpenGLTesting )
 
 
+set ( PROJECT_VERSION_MAJOR 0 )
+set ( PROJECT_VERSION_MINOR 1 )
 set ( CMAKE_CXX_STANDARD 17 )
-set ( PROJECT_VERSION_MAJOR 1 )
-set ( PROJECT_VERSION_MINOR 0 )
-
 set ( CMAKE_BUILD_TYPE Debug )
 set ( CMAKE_VERBOSE_MAKEFILE true )
 
+
+
+add_library(glad "${CMAKE_SOURCE_DIR}/include/glad/glad.h" "${CMAKE_SOURCE_DIR}/src/glad.c")
+
+include_directories( include )
 set ( 
 		SRC_FILES 
 			main.cpp
-			src/glad.c
 			src/util.cpp
 	)
-add_executable( "${CMAKE_PROJECT_NAME}-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.out"  $SRC_FILES)
+
+set( MYAPP "${CMAKE_PROJECT_NAME}-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}" )
+add_executable( ${MYAPP} ${SRC_FILES} )
+target_link_libraries(${MYAPP} glad glfw3  X11 Xi Xrandr Xxf86vm Xinerama Xcursor rt m pthread dl)
+set_target_properties(${MYAPP} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 find_package( OpenGL REQUIRED )
-find_package( )
-set ( CMAKE_C_COMPILER "gcc" )
-include_directories( include )
+find_package( GLEW REQUIRED )
 add_compile_options( -g -Wall )
-set ( CMAKE_EXE_LINKER_FLAGS "-static -Wl, --gc-sections" )
-link_libraries( find_package(GLEW REQUIRED) )
+
+
+message( STATUS "Compiler")
+message( STATUS " - ID       \t: ${CMAKE_CXX_COMPILER_ID}")
+message( STATUS " - Version  \t: ${CMAKE_CXX_COMPILER_VERSION}")
+message( STATUS " - Path     \t: ${CMAKE_CXX_COMPILER}")
