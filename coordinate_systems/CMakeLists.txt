@@ -3,7 +3,7 @@ project( OpenGLCoordinateSystems )
 
 
 set ( PROJECT_VERSION_MAJOR 0 )
-set ( PROJECT_VERSION_MINOR 1 )
+set ( PROJECT_VERSION_MINOR 2 )
 set ( CMAKE_CXX_STANDARD 17 )
 set ( CMAKE_BUILD_TYPE Debug )
 set ( CMAKE_VERBOSE_MAKEFILE true )
