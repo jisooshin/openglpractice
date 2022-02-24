@@ -1,8 +1,8 @@
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <vector>
 #include <cmath>
@@ -140,7 +140,6 @@ int main()
 	glGenBuffers(1, &VBO);
 
 	glBindVertexArray(VAO);
-
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
@@ -151,6 +150,12 @@ int main()
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+
+	// safely unbind buffer // 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	// ---------------------// 
+
 
 	Shader myShader("shaders/vertex.shader", "shaders/fragment.shader");
 	myShader.use();
@@ -193,8 +198,12 @@ int main()
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, cubePositions[i]);
 			float angle = 20.0f * (i + 1);
-			model = glm::rotate(model, 2 * (float)glfwGetTime() * glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.3f));
-			glUniformMatrix4fv(glGetUniformLocation(myShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+			model = glm::rotate(
+				model,
+				2 * (float)glfwGetTime() * glm::radians(angle),
+				glm::vec3(0.5f, 1.0f, 0.3f)
+			);
+			myShader.setMat4("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
