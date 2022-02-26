@@ -12,8 +12,8 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600 
+#define WINDOW_WIDTH 1920
+#define WINDOW_HEIGHT 1080
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -159,16 +159,13 @@ int main()
 
 	Shader myShader("shaders/vertex.shader", "shaders/fragment.shader");
 	myShader.use();
-
 	myShader.setInt("texture1", 0);
 	myShader.setInt("texture2", 1);
 
-	glm::mat4 view = glm::mat4(1.0f);
-	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
 	glm::mat4 projection = glm::mat4(1.0f);
 	projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-	glUniformMatrix4fv(glGetUniformLocation(myShader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
-	glUniformMatrix4fv(glGetUniformLocation(myShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	myShader.setMat4("projection", projection);
+
 
 	glEnable(GL_DEPTH_TEST);
 	while(!glfwWindowShouldClose(window))
@@ -178,12 +175,17 @@ int main()
 		captureImage(file_path, window);
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		// GLuint transformLoc = glGetUniformLocation(myShader.ID, "transform");
-		// glm::mat4 trans = glm::mat4(1.0f);
-		// trans = glm::translate(trans, glm::vec3(0.1f, -0.2f, 0.0f));
-		// trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-		// float value = (sin((float)glfwGetTime()) * 0.5) + 0.5;
+
+		const float radius = 10.0f;
+		float camX = sin(glfwGetTime()) * radius;
+		float camZ = cos(glfwGetTime()) * radius;
+		glm::mat4 view;
+		view = glm::lookAt(
+			glm::vec3(camX, 0.0f, camZ),
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f));
+
+		myShader.setMat4("view", view);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
