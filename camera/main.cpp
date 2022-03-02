@@ -12,19 +12,30 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-#define WINDOW_WIDTH 800
+#define WINDOW_WIDTH 800 
 #define WINDOW_HEIGHT 600
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
-void captureImage(std::string file_path, GLFWwindow* window);
+void captureImage(std::string&& file_path, GLFWwindow* window);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
 float deltaTime = 0.0f;
-float lastTime  = 0.0f;
+float lastFrame = 0.0f;
+float lastX = (float)WINDOW_WIDTH  / 2;
+float lastY = (float)WINDOW_HEIGHT / 2;
+bool firstMouse = true;
+
+float yaw   = -90.0f;
+float pitch = 0.0f;
+// roll 의 경우 일단 고려하지 않음
+
+float fov = 45.0f;
 
 int main()
 {
@@ -47,7 +58,6 @@ int main()
 		return -1;
 	}
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	stbi_set_flip_vertically_on_load(true);
 	int width, height, nrChannels;
@@ -63,7 +73,6 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	if (data)
 	{
-		printf("First image loaded\n");
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
@@ -78,7 +87,6 @@ int main()
 	data = stbi_load("image/awesomeface.png", &width, &height, &nrChannels, 0);
 	if (data)
 	{
-		printf("Second image loaded\n");
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
@@ -169,17 +177,23 @@ int main()
 	myShader.setInt("texture2", 1);
 
 	glm::mat4 projection = glm::mat4(1.0f);
-	projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-	myShader.setMat4("projection", projection);
 	glEnable(GL_DEPTH_TEST);
 
 
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 
 	while(!glfwWindowShouldClose(window))
 	{
+		projection = glm::perspective(glm::radians(fov), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+		myShader.setMat4("projection", projection);
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 		processInput(window);
-		std::string file_path = "saved_image/image.png";
-		captureImage(file_path, window);
+		captureImage("saved_image/image.png", window);
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -229,11 +243,6 @@ void processInput(GLFWwindow* window)
 	{
 		glfwSetWindowShouldClose(window, true);
 	}
-
-	float currentFrame = glfwGetTime();
-	deltaTime = currentFrame - lastTime;
-	lastTime = currentFrame;
-
 	const float cameraSpeed = 2.5f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
@@ -245,7 +254,7 @@ void processInput(GLFWwindow* window)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
 
-void captureImage(std::string file_path, GLFWwindow* window)
+void captureImage(std::string&& file_path, GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
 	{
@@ -263,4 +272,51 @@ void captureImage(std::string file_path, GLFWwindow* window)
 
 		stbi_write_png(file_path.c_str(), width, height, nrChannels, buffer.data(), stride);
 	}
+}
+
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos;
+
+	lastX = xpos;
+	lastY = ypos;
+
+	const float sensitivity = 0.02f;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	yaw   += xoffset;
+	pitch += yoffset;
+
+	if (pitch >  89.0f) pitch =  89.0f;
+	if (pitch < -89.0f) pitch = -89.0f;
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+	front.y = sin(glm::radians(pitch));
+	front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+	// printf("Camer Front: (%f, %f, %f)\n", cameraFront.x, cameraFront.y, cameraFront.z);
+	cameraFront = glm::normalize(front);
+
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	if (fov >= 1.0f && fov <= 45.0f)
+		fov -= yoffset;
+	if (fov <= 1.0f)
+		fov = 1.0f;
+	if (fov >= 45.0f)
+		fov = 45.0f;
+
+	printf("pov : %f\n", fov);
 }

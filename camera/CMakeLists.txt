@@ -15,7 +15,7 @@ set ( SRC_FILES main.cpp src/util.cpp )
 
 set( MYAPP "${CMAKE_PROJECT_NAME}-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}" )
 add_executable( ${MYAPP} ${SRC_FILES} )
-target_link_libraries(${MYAPP} glad glfw3  X11 Xi Xrandr Xcursor rt m pthread dl) # Xxf86vm Xinerama )
+target_link_libraries(${MYAPP} glad glfw3  X11 Xi Xrandr Xcursor rt m pthread dl Xxf86vm Xinerama )
 set_target_properties(${MYAPP} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 find_package( OpenGL REQUIRED )
