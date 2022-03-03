@@ -22,3 +22,4 @@ class Shader
 		void setFloat(const string& name, float value) const;
 		void setMat4(const string& name, glm::mat4 value) const;
 };
+
