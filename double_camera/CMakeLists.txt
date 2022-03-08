@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 3.16.3 )
-project( OpenGLCamera )
+project( OpenGLDoubleWindow )
 
 
 set ( PROJECT_VERSION_MAJOR 0 )
