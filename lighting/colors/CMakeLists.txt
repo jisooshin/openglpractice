@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 3.16.3 )
-project( OpenGLCamera )
+project( OpenGL_Lighting_Colors )
 
 
 set ( PROJECT_VERSION_MAJOR 0 )
