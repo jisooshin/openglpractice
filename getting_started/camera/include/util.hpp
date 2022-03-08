@@ -23,3 +23,13 @@ class Shader
 		void setMat4(const string& name, glm::mat4 value) const;
 };
 
+class Camera
+{
+	public:
+		Camera();
+		void move_Forward();
+		void move_Backward();
+		void move_();
+
+		
+};
