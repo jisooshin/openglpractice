@@ -6,7 +6,7 @@ set ( PROJECT_VERSION_MAJOR 0 )
 set ( PROJECT_VERSION_MINOR 1 )
 set ( CMAKE_CXX_STANDARD 17 )
 set ( CMAKE_BUILD_TYPE Debug )
-set ( CMAKE_VERBOSE_MAKEFILE true )
+# set ( CMAKE_VERBOSE_MAKEFILE true )
 
 add_library(glad "${CMAKE_SOURCE_DIR}/include/glad/glad.h" "${CMAKE_SOURCE_DIR}/src/glad.c")
 
