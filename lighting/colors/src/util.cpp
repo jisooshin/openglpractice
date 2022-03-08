@@ -47,7 +47,7 @@ Shader::Shader(const char* vertexPath, const char* fragPath)
 	if (!success)
 	{
 		glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-		printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n");
+		printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n");
 		printf("%s\n", infoLog);
 	}
 
@@ -89,4 +89,9 @@ void Shader::setFloat(const string& name, float value) const
 void Shader::setMat4(const string& name, glm::mat4 value) const
 {
 	glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+}
+
+void Shader::setVec3(const string& name, float v1, float v2, float v3) const
+{
+	glUniform3f(glGetUniformLocation(ID, name.c_str()), v1, v2, v3);
 }

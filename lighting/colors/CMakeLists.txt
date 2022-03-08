@@ -19,7 +19,6 @@ target_link_libraries(${MYAPP} glad glfw3  X11 Xi Xrandr Xcursor rt m pthread dl
 set_target_properties(${MYAPP} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 find_package( OpenGL REQUIRED )
-# find_package( GLEW REQUIRED )
 add_compile_options( -g -Wall )
 
 
