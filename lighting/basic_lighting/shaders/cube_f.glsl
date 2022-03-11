@@ -20,7 +20,7 @@ void main()
 
 	vec3 viewDirection = normalize(viewPos - FragPos);
 	vec3 reflectDirection = reflect(-lightDirection, norm);
-	float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), 32);
+	float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), 64);
 	vec3 specular = specularStrenth * spec * lightColor;
 
 	float ambientStrength = 0.1;

@@ -183,6 +183,11 @@ int main()
 		lampShader.setMat4("projection", projection);
 		lampShader.setMat4("view", camera.GetViewMatrix());
 		glm::mat4 lampModel = glm::mat4(1.0f);
+
+		lampPos = glm::vec3(1.2f, 1.0f, 1.0f);
+		lampPos.x += sin(glfwGetTime()) * 3;
+		lampPos.z += cos(glfwGetTime()) * 3;
+
 		lampModel = glm::translate(lampModel, lampPos);
 		lampModel = glm::scale(lampModel, glm::vec3(0.3f));
 		lampShader.setMat4("model", lampModel);
