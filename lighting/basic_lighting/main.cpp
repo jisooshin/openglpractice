@@ -22,25 +22,17 @@ void captureImage(std::string&& file_path, GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-glm::vec3 cameraPos   = glm::vec3(0.0f, 1.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
 glm::vec3 lampPos     = glm::vec3(1.2f, 1.0f, 1.0f);
-
 glm::mat4 projection  = glm::mat4(1.0f);
 glm::mat4 model       = glm::mat4(1.0f);
 
 float deltaTime  = 0.0f;
 float lastFrame  = 0.0f;
 bool  firstMouse = true;
-
-float lastX      = (float)WINDOW_WIDTH  / 2;
-float lastY      = (float)WINDOW_HEIGHT / 2;
-
-float yaw   = -90.0f;
-float pitch =   0.0f;
-float fov   =  45.0f;
+float lastX = WINDOW_WIDTH / 2.0f;
+float lastY = WINDOW_HEIGHT / 2.0f;
 
 int main()
 {
@@ -161,46 +153,26 @@ int main()
 		processInput(window);
 		captureImage("saved_image/image.png", window);
 
-		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Render Coral Cube // 
 		cubeShader.use();
 		cubeShader.setVec3("lightPos", lampPos[0], lampPos[1], lampPos[2]);
-		cubeShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+		cubeShader.setVec3("objectColor", 0.0f, 1.0f, 0.5f);
 		cubeShader.setVec3("lightColor",
 			lightSource[0],
 			lightSource[1],
 			lightSource[2]);
 
-		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		projection = glm::perspective(glm::radians(fov), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-
+		projection = glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 		cubeShader.setMat4("projection", projection);
-		cubeShader.setMat4("view", view);
+		cubeShader.setMat4("view", camera.GetViewMatrix());
 		cubeShader.setMat4("model", model);
-		cubeShader.setVec3("viewPos", cameraPos[0], cameraPos[1], cameraPos[2]);
+		cubeShader.setVec3("viewPos", camera.Position[0], camera.Position[1], camera.Position[2]);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-
-		// cubeShader.setVec3("lightPos", lampPos[0], lampPos[1], lampPos[2]);
-		// cubeShader.setVec3("objectColor", 1.0f, 0.8f, 0.31f);
-		// cubeShader.setVec3("lightColor",
-		// 	lightSource[0],
-		// 	lightSource[1],
-		// 	lightSource[2]);
-
-		// // glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-		// model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-		// projection = glm::perspective(glm::radians(fov), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-
-		// cubeShader.setMat4("projection", projection);
-		// cubeShader.setMat4("view", view);
-		// cubeShader.setMat4("model", model);
-		// glDrawArrays(GL_TRIANGLES, 0, 36);
-		// ------------------- // 
 
 		// Render light lamp // 
 		lampShader.use();
@@ -209,7 +181,7 @@ int main()
 			lightSource[1],
 			lightSource[2]);
 		lampShader.setMat4("projection", projection);
-		lampShader.setMat4("view", view);
+		lampShader.setMat4("view", camera.GetViewMatrix());
 		glm::mat4 lampModel = glm::mat4(1.0f);
 		lampModel = glm::translate(lampModel, lampPos);
 		lampModel = glm::scale(lampModel, glm::vec3(0.3f));
@@ -244,15 +216,14 @@ void processInput(GLFWwindow* window)
 	{
 		glfwSetWindowShouldClose(window, true);
 	}
-	const float cameraSpeed = 2.5f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
+		camera.ProcessKeyboard(Camera_Movement::FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
+		camera.ProcessKeyboard(Camera_Movement::BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		camera.ProcessKeyboard(Camera_Movement::LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		camera.ProcessKeyboard(Camera_Movement::RIGHT, deltaTime);
 }
 
 void captureImage(std::string&& file_path, GLFWwindow* window)
@@ -280,43 +251,18 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
+		firstMouse = false;
 		lastX = xpos;
 		lastY = ypos;
-		firstMouse = false;
 	}
-
 	float xoffset = xpos - lastX;
 	float yoffset = lastY - ypos;
-
 	lastX = xpos;
 	lastY = ypos;
-
-	const float sensitivity = 0.02f;
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	yaw   += xoffset;
-	pitch += yoffset;
-
-	if (pitch >  89.0f) pitch =  89.0f;
-	if (pitch < -89.0f) pitch = -89.0f;
-
-	glm::vec3 front;
-	front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
-	front.y = sin(glm::radians(pitch));
-	front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
-	// printf("Camer Front: (%f, %f, %f)\n", cameraFront.x, cameraFront.y, cameraFront.z);
-	cameraFront = glm::normalize(front);
-
+	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-
-	const float sensitivity = 2.0f;
-	fov -= yoffset * sensitivity;
-	if (fov < 1.0f)
-		fov = 1.0f;
-	if (fov > 45.0f)
-		fov = 45.0f;
+	camera.ProcessMouseScroll((float)yoffset);
 }

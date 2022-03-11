@@ -9,6 +9,19 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <GLFW/glfw3.h>
 
+const float YAW         = -90.0f;
+const float PITCH       = 0.0f;
+const float SPEED       = 2.5f;
+const float SENSITIVITY = 0.05f;
+const float ZOOM        = 45.0f;
+
+enum Camera_Movement
+{
+	FORWARD,
+	BACKWARD,
+	LEFT,
+	RIGHT
+};
 
 using namespace std;
 class Shader
@@ -29,17 +42,86 @@ class Camera
 // rendering loop 안에서 
 {
 	public:
-		Camera(glm::vec3 cameraPos, glm::vec3 cameraDirection, glm::vec3 cameraUp);
-		void moveKeyboard_Forward (); // 항상 projection * view 의 결과 matrix를 뱉어내도록 한다.
-		void moveKeyboard_Backward();
-		void moveKeyboard_Left    ();
-		void moveKeyboard_Right   ();
-		void moveMouse            (double xpos, double ypos, bool isFirstMouse);
-		void scale_up             ();
-		void scale_down           (); 
+		glm::vec3 Position, Front, Up, Right, WorldUp;
+		float Yaw, Pitch, MovementSpeed, MouseSensitivity, Zoom;
+		Camera(
+			glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3 up       = glm::vec3(0.0f, 1.0f, 0.0f),
+			float yaw = YAW,
+			float pitch = PITCH
+		) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), 
+			MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+		{
+			Position = position;
+			WorldUp  = up; Yaw      = yaw;
+			Pitch    = pitch;
+			updateCameraVectors();
+		}
+		Camera(
+			float posX, float posY, float posZ,
+			float upX, float upY, float upZ,
+			float yaw, float pitch
+		) : Front(glm::vec3(0.0f, 0.0f, -1.0f)),
+			MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+		{
+			Position = glm::vec3(posX, posY, posZ);
+			WorldUp  = glm::vec3(upX, upY, upZ);
+			Yaw      = yaw;
+			Pitch    = pitch;
+			updateCameraVectors();
+		}
+
+		glm::mat4 GetViewMatrix()
+		{
+			return glm::lookAt(Position, Position + Front, Up);
+		}
+
+		void ProcessKeyboard(Camera_Movement direction, float deltaTime)
+		{
+			float velocity = MovementSpeed * deltaTime;
+			if (direction == FORWARD)
+				Position += Front * velocity;
+			if (direction == BACKWARD)
+				Position -= Front * velocity;
+			if (direction == LEFT)
+				Position -= Right * velocity;
+			if (direction == RIGHT)
+				Position += Right * velocity;
+		}
+		void ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true)
+		{
+			xoffset *= MouseSensitivity;
+			yoffset *= MouseSensitivity;
+			Yaw     += xoffset;
+			Pitch   += yoffset;
+
+			if (constrainPitch)
+			{
+				if (Pitch > 89.0f)
+					Pitch = 89.0f;
+				if (Pitch < -89.0f)
+					Pitch = -89.0f;
+			}
+			updateCameraVectors();
+		}
+		void ProcessMouseScroll(float yoffset)
+		{
+			Zoom -= (float)yoffset;
+			if (Zoom < 1.0f)
+				Zoom = 1.0f;
+			if (Zoom > 45.0f)
+				Zoom = 45.0f;
+		}
 	private:
-		glm::mat4 cameraMatrix = glm::mat4(1.0f);
-		float yaw   = -90.0f;
-		float pitch =   0.0f;
-		float fov   =  45.0f;
+		void updateCameraVectors()
+		{
+			glm::vec3 front;
+			front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+        	front.y = sin(glm::radians(Pitch));
+        	front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+
+        	Front = glm::normalize(front);
+        	Right = glm::normalize(glm::cross(Front, WorldUp));
+        	Up    = glm::normalize(glm::cross(Right, Front));
+		}
 };
