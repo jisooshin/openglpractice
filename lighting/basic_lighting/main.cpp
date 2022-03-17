@@ -145,14 +145,14 @@ int main()
 	while(!glfwWindowShouldClose(window))
 	// renderLoop
 	{
-		vector<float> lightSource = { 1.0f, 1.0f, 1.0f };
-		float currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
-
+		vector<float> lightColor = { 1.0f, 1.0f, 1.0f };
 		glm::vec3 lampPos = glm::vec3(0.0f, 0.0f, 0.0f);
 		lampPos.x += sin(glfwGetTime()) * 3;
 		lampPos.z += cos(glfwGetTime()) * 3;
+
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 
 		processInput(window);
 		captureImage("saved_image/image.png", window);
@@ -165,9 +165,9 @@ int main()
 		cubeShader.setVec3("lightPos", lampPos[0], lampPos[1], lampPos[2]);
 		cubeShader.setVec3("objectColor", 0.0f, 1.0f, 0.5f);
 		cubeShader.setVec3("lightColor",
-			lightSource[0],
-			lightSource[1],
-			lightSource[2]);
+			lightColor[0],
+			lightColor[1],
+			lightColor[2]);
 
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 		projection = glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
@@ -181,9 +181,9 @@ int main()
 		// Render light lamp // 
 		lampShader.use();
 		lampShader.setVec3("lightColor",
-			lightSource[0],
-			lightSource[1],
-			lightSource[2]);
+			lightColor[0],
+			lightColor[1],
+			lightColor[2]);
 		lampShader.setMat4("projection", projection);
 		lampShader.setMat4("view", camera.GetViewMatrix());
 		glm::mat4 lampModel = glm::mat4(1.0f);
