@@ -145,10 +145,14 @@ int main()
 	while(!glfwWindowShouldClose(window))
 	// renderLoop
 	{
-		glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+		glm::vec3 lightColor;
+		lightColor.x = sin(glfwGetTime() * 2.0f);
+		lightColor.y = sin(glfwGetTime() * 0.7f);
+		lightColor.y = sin(glfwGetTime() * 1.3f);
+
 		glm::vec3 lampPos = glm::vec3(0.0f, 0.0f, 0.0f);
-		lampPos.x += sin(glfwGetTime()) * 3;
-		lampPos.z += cos(glfwGetTime()) * 3;
+		lampPos.x += sin(glfwGetTime() * 0.5 ) * 1.5f;
+		lampPos.z += cos(glfwGetTime() * 0.5 ) * 1.5f;
 
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -170,9 +174,10 @@ int main()
 		cubeShader.setFloat("material.shininess", 32.0f);
 
 		cubeShader.setVec3("light.position", lampPos);
-
-		cubeShader.setVec3("light.ambient",  glm::vec3(1.0f, 1.0f, 1.0f));
-		cubeShader.setVec3("light.diffuse",  glm::vec3(1.0f, 1.0f, 1.0f));
+		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
+		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
+		cubeShader.setVec3("light.ambient",  ambientColor);
+		cubeShader.setVec3("light.diffuse",  diffuseColor);
 		cubeShader.setVec3("light.sepcular", glm::vec3(1.0f, 1.0f, 1.0f));
 
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
