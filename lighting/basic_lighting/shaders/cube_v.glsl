@@ -15,5 +15,5 @@ void main()
 	FragPos = vec3(model * vec4(aPos, 1.0));
 	// Normal = aNormal;
 	// Normal = mat3(transpose(inverse(model))) * aNormal;
-	Normal = vec3(model * vec4(aNormal, 0.0));
+	Normal = vec3(transpose(inverse(model)) * vec4(aNormal, 0.0));
 }

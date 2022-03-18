@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 3.16.3 )
-project( OpenGL_Lighting_Material )
+project( OpenGL_Lighting_Material)
 
 
 set ( PROJECT_VERSION_MAJOR 0 )

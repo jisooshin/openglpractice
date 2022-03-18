@@ -160,8 +160,10 @@ int main()
 		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Render Coral Cube // 
 		cubeShader.use();
+		lampShader.use();
+
+		// Render Coral Cube // 
 		cubeShader.setVec3("lightPos", lampPos[0], lampPos[1], lampPos[2]);
 		cubeShader.setVec3("objectColor", 0.0f, 1.0f, 0.5f);
 		cubeShader.setVec3("lightColor",
@@ -179,7 +181,6 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Render light lamp // 
-		lampShader.use();
 		lampShader.setVec3("lightColor",
 			lightColor[0],
 			lightColor[1],
@@ -187,7 +188,6 @@ int main()
 		lampShader.setMat4("projection", projection);
 		lampShader.setMat4("view", camera.GetViewMatrix());
 		glm::mat4 lampModel = glm::mat4(1.0f);
-
 
 		lampModel = glm::translate(lampModel, lampPos);
 		lampModel = glm::scale(lampModel, glm::vec3(0.3f));
