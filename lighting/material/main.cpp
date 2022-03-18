@@ -161,26 +161,34 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		cubeShader.use();
-		lampShader.use();
 
 		// Render Coral Cube // 
-		cubeShader.setVec3("lightPos", lampPos[0], lampPos[1], lampPos[2]);
 		cubeShader.setVec3("objectColor", 0.0f, 1.0f, 0.5f);
-		cubeShader.setVec3("lightColor",
-			lightColor[0],
-			lightColor[1],
-			lightColor[2]);
+		cubeShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+		cubeShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+		cubeShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+		cubeShader.setFloat("material.shininess", 32.0f);
+
+		cubeShader.setVec3("light.position", lampPos[0], lampPos[1], lampPos[2]);
+		cubeShader.setVec3("light.ambient",  1.0f, 1.0f, 1.0f);
+		cubeShader.setVec3("light.diffuse",  1.0f, 1.0f, 1.0f);
+		cubeShader.setVec3("light.sepcular", 1.0f, 1.0f, 1.0f);
 
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		projection = glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+		projection = glm::perspective(
+			glm::radians(camera.Zoom),
+			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT,
+			0.1f, 100.0f);
 		cubeShader.setMat4("projection", projection);
 		cubeShader.setMat4("view", camera.GetViewMatrix());
 		cubeShader.setMat4("model", model);
-		cubeShader.setVec3("viewPos", camera.Position[0], camera.Position[1], camera.Position[2]);
+		cubeShader.setVec3("viewPos", 
+			camera.Position[0], camera.Position[1], camera.Position[2]);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Render light lamp // 
+		lampShader.use();
 		lampShader.setVec3("lightColor",
 			lightColor[0],
 			lightColor[1],
@@ -206,9 +214,6 @@ int main()
 	return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
