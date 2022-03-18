@@ -34,7 +34,7 @@ class Shader
 		void setInt(const string& name, int value) const;
 		void setFloat(const string& name, float value) const;
 		void setMat4(const string& name, glm::mat4 value) const;
-		void setVec3(const string& name, float v1, float v2, float v3) const;
+		void setVec3(const string& name, glm::vec3 v) const;
 };
 
 class Camera

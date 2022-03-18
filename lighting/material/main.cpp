@@ -145,7 +145,7 @@ int main()
 	while(!glfwWindowShouldClose(window))
 	// renderLoop
 	{
-		vector<float> lightColor = { 1.0f, 1.0f, 1.0f };
+		glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		glm::vec3 lampPos = glm::vec3(0.0f, 0.0f, 0.0f);
 		lampPos.x += sin(glfwGetTime()) * 3;
 		lampPos.z += cos(glfwGetTime()) * 3;
@@ -163,16 +163,17 @@ int main()
 		cubeShader.use();
 
 		// Render Coral Cube // 
-		cubeShader.setVec3("objectColor", 0.0f, 1.0f, 0.5f);
-		cubeShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
-		cubeShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
-		cubeShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+		cubeShader.setVec3("objectColor", glm::vec3(0.0f, 1.0f, 0.5f));
+		cubeShader.setVec3("material.ambient",  glm::vec3(1.0f, 0.5f, 0.31f));
+		cubeShader.setVec3("material.diffuse",  glm::vec3(1.0f, 0.5f, 0.31f));
+		cubeShader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
 		cubeShader.setFloat("material.shininess", 32.0f);
 
-		cubeShader.setVec3("light.position", lampPos[0], lampPos[1], lampPos[2]);
-		cubeShader.setVec3("light.ambient",  1.0f, 1.0f, 1.0f);
-		cubeShader.setVec3("light.diffuse",  1.0f, 1.0f, 1.0f);
-		cubeShader.setVec3("light.sepcular", 1.0f, 1.0f, 1.0f);
+		cubeShader.setVec3("light.position", lampPos);
+
+		cubeShader.setVec3("light.ambient",  glm::vec3(1.0f, 1.0f, 1.0f));
+		cubeShader.setVec3("light.diffuse",  glm::vec3(1.0f, 1.0f, 1.0f));
+		cubeShader.setVec3("light.sepcular", glm::vec3(1.0f, 1.0f, 1.0f));
 
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 		projection = glm::perspective(
@@ -182,17 +183,13 @@ int main()
 		cubeShader.setMat4("projection", projection);
 		cubeShader.setMat4("view", camera.GetViewMatrix());
 		cubeShader.setMat4("model", model);
-		cubeShader.setVec3("viewPos", 
-			camera.Position[0], camera.Position[1], camera.Position[2]);
+		cubeShader.setVec3("viewPos", camera.Position);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Render light lamp // 
 		lampShader.use();
-		lampShader.setVec3("lightColor",
-			lightColor[0],
-			lightColor[1],
-			lightColor[2]);
+		lampShader.setVec3("lightColor", lightColor);
 		lampShader.setMat4("projection", projection);
 		lampShader.setMat4("view", camera.GetViewMatrix());
 		glm::mat4 lampModel = glm::mat4(1.0f);
