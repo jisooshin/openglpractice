@@ -3,6 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <GLFW/glfw3.h>
+#include <stdexcept>
 #include <stdio.h>
 #include <vector>
 #include <cmath>
@@ -15,12 +16,12 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void captureImage(std::string&& file_path, GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+GLuint loadTexture(const char* imagePath);
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
@@ -58,50 +59,49 @@ int main()
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	float vertices[] = {
-		//  Vertex coord //  //  Normal vector // 
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
-		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+		// positions          // normals       // texture coords
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
 
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 	};
-
 
 
 	GLuint VAO, VBO;
@@ -113,11 +113,15 @@ int main()
 
 	glBindVertexArray(VAO);
 	// vertex coord
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(sizeof(float) * 3));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 3));
 	glEnableVertexAttribArray(1);
+
+	// Texture
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 6));
+	glEnableVertexAttribArray(2);
 
 	// safely unbind buffer // 
 	// glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -129,8 +133,12 @@ int main()
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	// -> texture 
+	const char* textureImage = "image/container2.png";
+	GLuint diffuseMap = loadTexture(textureImage);
 
 	Shader cubeShader ("shaders/cube_v.glsl", "shaders/cube_f.glsl");
 	Shader lampShader ("shaders/lamp_v.glsl", "shaders/lamp_f.glsl");
@@ -141,15 +149,18 @@ int main()
 	glfwSetScrollCallback(window, scroll_callback);
 	glEnable(GL_DEPTH_TEST);
 
+	cubeShader.use();
+	cubeShader.setInt("material.diffuse", 0);
+
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while(!glfwWindowShouldClose(window))
 	// renderLoop
 	{
 		glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-
 		glm::vec3 lampPos = glm::vec3(0.0f, 0.0f, 0.0f);
-		lampPos.x += sin(glfwGetTime() * 0.5 ) * 1.5f;
-		lampPos.z += cos(glfwGetTime() * 0.5 ) * 1.5f;
+		lampPos.x += sin(glfwGetTime() * 2.0f) * 1.5f;
+		lampPos.z += cos(glfwGetTime() * 2.0f) * 1.5f;
+		lampPos.y += sin(glfwGetTime() * 2.0f) * 1.5f;
 
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -164,8 +175,6 @@ int main()
 		cubeShader.use();
 
 		// Render Coral Cube // 
-		cubeShader.setVec3("material.ambient",  glm::vec3(0.19225f, 0.19225f, 0.19225f));
-		cubeShader.setVec3("material.diffuse",  glm::vec3(0.50754f, 0.50754, 0.50754f));
 		cubeShader.setVec3("material.specular", glm::vec3(0.508273f, 0.508273f, 0.508273f));
 		cubeShader.setFloat("material.shininess", 0.4f);
 
@@ -274,4 +283,36 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll((float)yoffset);
+}
+
+
+GLuint loadTexture(const char* imagePath)
+{
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	int width, height, channels;
+	unsigned char* data = stbi_load(imagePath, &width, &height, &channels, 0);
+	if (data)
+	{
+		GLenum format;
+        if (channels == 1)
+            format = GL_RED;
+        else if (channels == 3)
+            format = GL_RGB;
+        else if (channels == 4)
+            format = GL_RGBA;
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	}
+	else
+	{
+		throw "Failed to read Image file.\n";
+	}
+	stbi_image_free(data);
+	return textureID;
 }
