@@ -151,6 +151,7 @@ int main()
 
 	cubeShader.use();
 	cubeShader.setInt("material.diffuse", 0);
+	lampShader.use();
 
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while(!glfwWindowShouldClose(window))
@@ -160,7 +161,6 @@ int main()
 		glm::vec3 lampPos = glm::vec3(0.0f, 0.0f, 0.0f);
 		lampPos.x += sin(glfwGetTime() * 2.0f) * 1.5f;
 		lampPos.z += cos(glfwGetTime() * 2.0f) * 1.5f;
-		lampPos.y += sin(glfwGetTime() * 2.0f) * 1.5f;
 
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -169,21 +169,22 @@ int main()
 		processInput(window);
 		captureImage("saved_image/image.png", window);
 
-		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		cubeShader.use();
 
 		// Render Coral Cube // 
-		cubeShader.setVec3("material.specular", glm::vec3(0.508273f, 0.508273f, 0.508273f));
-		cubeShader.setFloat("material.shininess", 0.4f);
+		cubeShader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+		cubeShader.setFloat("material.shininess", 256.0f);
 
 		cubeShader.setVec3("light.position", lampPos);
+		cubeShader.setVec3("viewPos", camera.Position);
 		// glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
 		// glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
-		cubeShader.setVec3("light.ambient",  glm::vec3(1.0f));
-		cubeShader.setVec3("light.diffuse",  glm::vec3(1.0f));
-		cubeShader.setVec3("light.sepcular", glm::vec3(1.0f));
+		cubeShader.setVec3("light.ambient",  glm::vec3(0.2f, 0.2f, 0.2f));
+		cubeShader.setVec3("light.diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
+		cubeShader.setVec3("light.sepcular", glm::vec3(1.0f, 1.0f, 1.0f));
 
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 		projection = glm::perspective(
@@ -193,7 +194,6 @@ int main()
 		cubeShader.setMat4("projection", projection);
 		cubeShader.setMat4("view", camera.GetViewMatrix());
 		cubeShader.setMat4("model", model);
-		cubeShader.setVec3("viewPos", camera.Position);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
