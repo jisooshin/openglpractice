@@ -161,7 +161,6 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		cubeShader.use();
-		lampShader.use();
 
 		// Render Coral Cube // 
 		cubeShader.setVec3("lightPos", lampPos[0], lampPos[1], lampPos[2]);
@@ -181,6 +180,7 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Render light lamp // 
+		lampShader.use();
 		lampShader.setVec3("lightColor",
 			lightColor[0],
 			lightColor[1],

@@ -26,12 +26,11 @@ void main()
 	float diff = max(dot(norm, lightDirection), 0.0);
 	vec3 diffuse = (diff * material.diffuse) * light.diffuse;
 
-	float specularStrenth = 0.5;
 	vec3 viewDirection = normalize(viewPos - FragPos);
 	vec3 reflectDirection = reflect(-lightDirection, norm);
-	float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), material.shininess);
+	float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), 64.0);
 	vec3 specular = (spec *  material.specular) * light.specular;
 
-	vec3 result = (ambient + diffuse + specular);
+	vec3 result = (ambient + specular) * vec3(0.3, 0.5, 0.2);
 	FragColor = vec4(result, 1.0);
 }

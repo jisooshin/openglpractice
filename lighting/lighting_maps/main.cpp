@@ -58,6 +58,9 @@ int main()
 	}
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+	// global
+	glEnable(GL_DEPTH_TEST);
+
 	float vertices[] = {
 		// positions          // normals       // texture coords
 		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
@@ -147,21 +150,14 @@ int main()
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
-	glEnable(GL_DEPTH_TEST);
 
 	cubeShader.use();
 	cubeShader.setInt("material.diffuse", 0);
-	lampShader.use();
 
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while(!glfwWindowShouldClose(window))
 	// renderLoop
 	{
-		glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-		glm::vec3 lampPos = glm::vec3(0.0f, 0.0f, 0.0f);
-		lampPos.x += sin(glfwGetTime() * 2.0f) * 1.5f;
-		lampPos.z += cos(glfwGetTime() * 2.0f) * 1.5f;
-
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -172,11 +168,18 @@ int main()
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+
+		glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+		glm::vec3 lampPos = glm::vec3(0.0f);
+		lampPos.x += sin(glfwGetTime() * 1.0f) * 1.5f;
+		lampPos.z += cos(glfwGetTime() * 1.0f) * 1.5f;
+
 		cubeShader.use();
 
 		// Render Coral Cube // 
 		cubeShader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-		cubeShader.setFloat("material.shininess", 256.0f);
+		cubeShader.setFloat("material.shininess", 32.0f);
 
 		cubeShader.setVec3("light.position", lampPos);
 		cubeShader.setVec3("viewPos", camera.Position);
@@ -184,7 +187,7 @@ int main()
 		// glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
 		cubeShader.setVec3("light.ambient",  glm::vec3(0.2f, 0.2f, 0.2f));
 		cubeShader.setVec3("light.diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
-		cubeShader.setVec3("light.sepcular", glm::vec3(1.0f, 1.0f, 1.0f));
+		cubeShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 		projection = glm::perspective(
