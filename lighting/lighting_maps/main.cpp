@@ -5,8 +5,10 @@
 #include <GLFW/glfw3.h>
 #include <stdexcept>
 #include <stdio.h>
+#include <iostream>
 #include <vector>
 #include <cmath>
+#include <string>
 #include "util.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -23,7 +25,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 GLuint loadTexture(const char* imagePath);
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 1.0f, 3.0f));
 
 glm::mat4 projection  = glm::mat4(1.0f);
 glm::mat4 model       = glm::mat4(1.0f);
@@ -140,8 +142,8 @@ int main()
 	glEnableVertexAttribArray(0);
 
 	// -> texture 
-	const char* textureImage = "image/container2.png";
-	GLuint diffuseMap = loadTexture(textureImage);
+	GLuint diffuseMap = loadTexture("image/container2.png");
+	GLuint specularMap = loadTexture("image/container2_specular.png");
 
 	Shader cubeShader ("shaders/cube_v.glsl", "shaders/cube_f.glsl");
 	Shader lampShader ("shaders/lamp_v.glsl", "shaders/lamp_f.glsl");
@@ -153,6 +155,8 @@ int main()
 
 	cubeShader.use();
 	cubeShader.setInt("material.diffuse", 0);
+	cubeShader.use();
+	cubeShader.setInt("material.specular", 1);
 
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while(!glfwWindowShouldClose(window))
@@ -168,28 +172,38 @@ int main()
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffuseMap);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, specularMap);
 
-
-		glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		glm::vec3 lampPos = glm::vec3(0.0f);
-		lampPos.x += sin(glfwGetTime() * 1.0f) * 1.5f;
-		lampPos.z += cos(glfwGetTime() * 1.0f) * 1.5f;
+		lampPos.x += sin(glfwGetTime() * 2.0f) * 1.5f;
+		lampPos.z += cos(glfwGetTime() * 2.0f) * 1.5f;
+
+		glm::vec3 lampPos2 = glm::vec3(0.0f);
+		lampPos2.x += sin(glfwGetTime() * 1.5f) * 1.5f;
+		lampPos2.y += cos(glfwGetTime() * 1.5f) * 1.5f;
 
 		cubeShader.use();
 
 		// Render Coral Cube // 
-		cubeShader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+		cubeShader.setVec3("viewPos", camera.Position);
+
 		cubeShader.setFloat("material.shininess", 32.0f);
 
 		cubeShader.setVec3("light.position", lampPos);
-		cubeShader.setVec3("viewPos", camera.Position);
-		// glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
-		// glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
 		cubeShader.setVec3("light.ambient",  glm::vec3(0.2f, 0.2f, 0.2f));
 		cubeShader.setVec3("light.diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
 		cubeShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 
+		cubeShader.setVec3("light2.position", lampPos2);
+		cubeShader.setVec3("light2.ambient",  glm::vec3(0.2f, 0.2f, 0.2f));
+		cubeShader.setVec3("light2.diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
+		cubeShader.setVec3("light2.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, deltaTime * glm::radians(90.0f), glm::vec3(0.5f, 1.0f, 0.2f));
 		projection = glm::perspective(
 			glm::radians(camera.Zoom),
 			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT,
@@ -200,18 +214,37 @@ int main()
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		// Render light lamp // 
+
+		// Render light lamp 1// 
+		glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+
 		lampShader.use();
 		lampShader.setVec3("lightColor", lightColor);
 		lampShader.setMat4("projection", projection);
 		lampShader.setMat4("view", camera.GetViewMatrix());
-		glm::mat4 lampModel = glm::mat4(1.0f);
 
+		glm::mat4 lampModel = glm::mat4(1.0f);
 		lampModel = glm::translate(lampModel, lampPos);
 		lampModel = glm::scale(lampModel, glm::vec3(0.3f));
 		lampShader.setMat4("model", lampModel);
 		glBindVertexArray(lampVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Render light lamp 2// 
+		glm::vec3 lightColor2 = glm::vec3(1.0f, 1.0f, 1.0f);
+
+		lampShader.use();
+		lampShader.setVec3("lightColor", lightColor2);
+		lampShader.setMat4("projection", projection);
+		lampShader.setMat4("view", camera.GetViewMatrix());
+
+		glm::mat4 lampModel2 = glm::mat4(1.0f);
+		lampModel2 = glm::translate(lampModel2, lampPos2);
+		lampModel2 = glm::scale(lampModel2, glm::vec3(0.3f));
+		lampShader.setMat4("model", lampModel2);
+		glBindVertexArray(lampVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -318,4 +351,6 @@ GLuint loadTexture(const char* imagePath)
 	}
 	stbi_image_free(data);
 	return textureID;
+
 }
+
