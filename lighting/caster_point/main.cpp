@@ -195,7 +195,8 @@ int main()
 			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 
 		glm::vec3 lampPos = glm::vec3(0.0f);
-		lampPos.z = 3.0f;
+		lampPos.x = sin(glfwGetTime()) * 5.0f;
+		lampPos.z = cos(glfwGetTime()) * 5.0f;
 
 		cubeShader.use();
 		cubeShader.setVec3("viewPos", camera.Position);
@@ -204,6 +205,10 @@ int main()
 		cubeShader.setVec3("light.ambient",  glm::vec3(0.2f, 0.2f, 0.2f));
 		cubeShader.setVec3("light.diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
 		cubeShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		cubeShader.setFloat("light.constant", 1.0f);
+		cubeShader.setFloat("light.linear", 0.09f);
+		cubeShader.setFloat("light.quadratic", 0.032f);
+
 
 		glBindVertexArray(VAO);
 		for (int i = 0; i < 10; i++)
