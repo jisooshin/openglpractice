@@ -27,8 +27,6 @@ GLuint loadTexture(const char* imagePath);
 
 Camera camera(glm::vec3(0.0f, 1.0f, 3.0f));
 
-glm::mat4 projection  = glm::mat4(1.0f);
-glm::mat4 model       = glm::mat4(1.0f);
 
 float deltaTime  = 0.0f;
 float lastFrame  = 0.0f;
@@ -107,6 +105,18 @@ int main()
 		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
 		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 	};
+	glm::vec3 cubePositions[] = {
+		glm::vec3( 0.0f,  0.0f,  0.0f),
+		glm::vec3( 2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3( 2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3( 1.3f, -2.0f, -2.5f),
+		glm::vec3( 1.5f,  2.0f, -2.5f),
+		glm::vec3( 1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
 
 
 	GLuint VAO, VBO;
@@ -129,7 +139,6 @@ int main()
 	glEnableVertexAttribArray(2);
 
 	// safely unbind buffer // 
-	// glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
 	GLuint lampVAO;
@@ -140,6 +149,10 @@ int main()
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
 
 	// -> texture 
 	GLuint diffuseMap = loadTexture("image/container2.png");
@@ -177,74 +190,36 @@ int main()
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, specularMap);
 
-		glm::vec3 lampPos = glm::vec3(0.0f);
-		lampPos.x += sin(glfwGetTime() * 2.0f) * 1.5f;
-		lampPos.z += cos(glfwGetTime() * 2.0f) * 1.5f;
-
-		glm::vec3 lampPos2 = glm::vec3(0.0f);
-		lampPos2.x += sin(glfwGetTime() * 1.5f) * 1.5f;
-		lampPos2.y += cos(glfwGetTime() * 1.5f) * 1.5f;
+		glm::mat4 projection  = glm::mat4(1.0f);
+		projection = glm::perspective(
+			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 
 		cubeShader.use();
-
-		// Render Coral Cube // 
 		cubeShader.setVec3("viewPos", camera.Position);
-
 		cubeShader.setFloat("material.shininess", 32.0f);
-
-		cubeShader.setVec3("light.position", lampPos);
+		cubeShader.setVec3("light.position", camera.Position);
 		cubeShader.setVec3("light.ambient",  glm::vec3(0.2f, 0.2f, 0.2f));
 		cubeShader.setVec3("light.diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
 		cubeShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		cubeShader.setVec3("light.direction", camera.Front);
+		cubeShader.setFloat("light.constant", 1.0f);
+		cubeShader.setFloat("light.linear", 0.09f);
+		cubeShader.setFloat("light.quadratic", 0.032f);
+		cubeShader.setFloat("light.cutOff", glm::cos(glm::radians(20.0f)));
 
-		cubeShader.setVec3("light2.position", lampPos2);
-		cubeShader.setVec3("light2.ambient",  glm::vec3(0.2f, 0.2f, 0.2f));
-		cubeShader.setVec3("light2.diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
-		cubeShader.setVec3("light2.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, deltaTime * glm::radians(90.0f), glm::vec3(0.5f, 1.0f, 0.2f));
-		projection = glm::perspective(
-			glm::radians(camera.Zoom),
-			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT,
-			0.1f, 100.0f);
-		cubeShader.setMat4("projection", projection);
-		cubeShader.setMat4("view", camera.GetViewMatrix());
-		cubeShader.setMat4("model", model);
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-
-		// Render light lamp 1// 
-		glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-
-		lampShader.use();
-		lampShader.setVec3("lightColor", lightColor);
-		lampShader.setMat4("projection", projection);
-		lampShader.setMat4("view", camera.GetViewMatrix());
-
-		glm::mat4 lampModel = glm::mat4(1.0f);
-		lampModel = glm::translate(lampModel, lampPos);
-		lampModel = glm::scale(lampModel, glm::vec3(0.3f));
-		lampShader.setMat4("model", lampModel);
-		glBindVertexArray(lampVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		// Render light lamp 2// 
-		glm::vec3 lightColor2 = glm::vec3(1.0f, 1.0f, 1.0f);
-
-		lampShader.use();
-		lampShader.setVec3("lightColor", lightColor2);
-		lampShader.setMat4("projection", projection);
-		lampShader.setMat4("view", camera.GetViewMatrix());
-
-		glm::mat4 lampModel2 = glm::mat4(1.0f);
-		lampModel2 = glm::translate(lampModel2, lampPos2);
-		lampModel2 = glm::scale(lampModel2, glm::vec3(0.3f));
-		lampShader.setMat4("model", lampModel2);
-		glBindVertexArray(lampVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
+		for (int i = 0; i < 10; i++)
+		{
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			float angle = 20.0f * i * glfwGetTime();
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.2f));
+			cubeShader.setMat4("projection", projection);
+			cubeShader.setMat4("view", camera.GetViewMatrix());
+			cubeShader.setMat4("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
