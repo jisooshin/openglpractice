@@ -30,11 +30,11 @@ class Shader
 		GLuint ID;
 		Shader(const char* vertexPath, const char* fragPath);
 		void use();
-		void setBool(const string& name, bool value) const;
-		void setInt(const string& name, int value) const;
-		void setFloat(const string& name, float value) const;
-		void setMat4(const string& name, glm::mat4 value) const;
-		void setVec3(const string& name, glm::vec3 v) const;
+		void setBool  (const string& name, bool value)      const;
+		void setInt   (const string& name, int value)       const;
+		void setFloat (const string& name, float value)     const;
+		void setMat4  (const string& name, glm::mat4 value) const;
+		void setVec3  (const string& name, glm::vec3 v)     const;
 };
 
 class Camera

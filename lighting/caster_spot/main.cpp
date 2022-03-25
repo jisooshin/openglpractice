@@ -167,13 +167,15 @@ int main()
 	glfwSetScrollCallback(window, scroll_callback);
 
 	cubeShader.use();
+	// fragment Shader 의 material object 의 diffuse 값을 첫번쨰로 선언한 Texture 로 넣는다는 얘기
+	// shader에서 sampler2D 타입이기 때문에 texture를 받는다. 
 	cubeShader.setInt("material.diffuse", 0);
-	cubeShader.use();
+	// 위와 마찬가지
+	// 그리고 texture의 경우 rendering loop에 없어도 무방하다
+	// render loop에 따라서 변화하는 게 아니기 때문에
 	cubeShader.setInt("material.specular", 1);
 
-	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while(!glfwWindowShouldClose(window))
-	// renderLoop
 	{
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -185,28 +187,43 @@ int main()
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// 위에서 0번쨰 texture를 material.diffuse에
+		// 1번째 texture를 material.specular에 할당하였으므로
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, specularMap);
 
-		glm::mat4 projection  = glm::mat4(1.0f);
-		projection = glm::perspective(
-			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 
 		cubeShader.use();
+		// fragment Shader 에 전달할 uniform들
+
+		// viewPose가 있어야 specular lighting 을 수행할 수 있음 
 		cubeShader.setVec3("viewPos", camera.Position);
 		cubeShader.setFloat("material.shininess", 32.0f);
+		
+		// spot lighting 에서는 light position 을 camera Postion으로함
 		cubeShader.setVec3("light.position", camera.Position);
+		
+		// light의 특성 정해주기
 		cubeShader.setVec3("light.ambient",  glm::vec3(0.2f, 0.2f, 0.2f));
 		cubeShader.setVec3("light.diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
-		cubeShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		cubeShader.setVec3("light.specular", glm::vec3(1.5f, 1.5f, 1.5f));
+
+
 		cubeShader.setVec3("light.direction", camera.Front);
+		// attenuation 구현파라미터
 		cubeShader.setFloat("light.constant", 1.0f);
 		cubeShader.setFloat("light.linear", 0.09f);
 		cubeShader.setFloat("light.quadratic", 0.032f);
+		// cutoff 파라미터 
 		cubeShader.setFloat("light.cutOff", glm::cos(glm::radians(20.0f)));
 
+		// Projection matrix의 zoom 값은 마우스 scroll 에 따라 변화가 가능하기 떄문에
+		// render loop 에 넣었으나, 아래의 for loop에는 넣지 않아도 된다. (어차피 공통적이기 때문)
+		glm::mat4 projection  = glm::mat4(1.0f);
+		projection = glm::perspective(
+			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 
 		glBindVertexArray(VAO);
 		for (int i = 0; i < 10; i++)
