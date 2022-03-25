@@ -12,8 +12,8 @@ struct Light
 	vec3 diffuse;
 	vec3 specular;
 	vec3 direction;
-
-	float constant, linear, quadratic, cutOff;
+	float constant, linear, quadratic;
+	float innerCutOff, outerCutOff;
 };
 
 in vec3 Normal;
@@ -54,15 +54,17 @@ void main()
 	float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), material.shininess);
 	vec3 specular  = (spec  * texture(material.specular, TexCoords).rgb) * light.specular;
 
+
+	// spotlight (soft edges)
+    float theta = dot(lightDirection, normalize(-light.direction)); 
+    float epsilon = (light.innerCutOff - light.outerCutOff);
+    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+    diffuse  *= intensity;
+    specular *= intensity;
+
 	float dist = length(light.position - FragPos);
 	float att  = 1.0 / (light.constant + light.linear * dist + light.quadratic * dist * dist);
 
-	float theta = dot(lightDirection, normalize(-light.direction));
-	// vec3 result = (ambient + diffuse + specular) * att;
-	vec3 result = ambient * att;
-	if (theta > light.cutOff)
-	{
-		result = (ambient + diffuse + specular) * att;
-	}
+	vec3 result = (ambient + diffuse + specular) * att;
 	FragColor = vec4(result, 1.0);
 }

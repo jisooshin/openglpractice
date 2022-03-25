@@ -206,9 +206,9 @@ int main()
 		cubeShader.setVec3("light.position", camera.Position);
 		
 		// light의 특성 정해주기
-		cubeShader.setVec3("light.ambient",  glm::vec3(0.2f, 0.2f, 0.2f));
-		cubeShader.setVec3("light.diffuse",  glm::vec3(0.5f, 0.5f, 0.5f));
-		cubeShader.setVec3("light.specular", glm::vec3(1.5f, 1.5f, 1.5f));
+		cubeShader.setVec3("light.ambient",  glm::vec3(0.2f * 1.5f, 0.2f * 1.5f, 0.2f * 1.5f));
+		cubeShader.setVec3("light.diffuse",  glm::vec3(0.5f * 1.5f, 0.5f * 1.5f, 0.5f * 1.5f));
+		cubeShader.setVec3("light.specular", glm::vec3(1.0f * 1.5f, 1.0f * 1.5f, 1.0f * 1.5f));
 
 
 		cubeShader.setVec3("light.direction", camera.Front);
@@ -217,7 +217,8 @@ int main()
 		cubeShader.setFloat("light.linear", 0.09f);
 		cubeShader.setFloat("light.quadratic", 0.032f);
 		// cutoff 파라미터 
-		cubeShader.setFloat("light.cutOff", glm::cos(glm::radians(20.0f)));
+		cubeShader.setFloat("light.innerCutOff", glm::cos(glm::radians(12.5f)));
+		cubeShader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
 
 		// Projection matrix의 zoom 값은 마우스 scroll 에 따라 변화가 가능하기 떄문에
 		// render loop 에 넣었으나, 아래의 for loop에는 넣지 않아도 된다. (어차피 공통적이기 때문)
