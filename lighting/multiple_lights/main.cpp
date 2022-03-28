@@ -97,8 +97,8 @@ int main()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 6));
 	glEnableVertexAttribArray(2);
 
-	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	// glBindVertexArray(0);
+	// glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	GLuint lampVAO;
 	glGenVertexArrays(1, &lampVAO);
@@ -109,8 +109,8 @@ int main()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	// glBindVertexArray(0);
+	// glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// -> texture 
 	GLuint diffuseMap  = loadTexture("image/container2.png");
@@ -124,13 +124,16 @@ int main()
 	glfwSetScrollCallback(window, scroll_callback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+
+
 	cubeShader.use();
-	// fragment Shader 의 material object 의 diffuse 값을 첫번쨰로 선언한 Texture 로 넣는다는 얘기
-	// shader에서 sampler2D 타입이기 때문에 texture를 받는다. 
+	// texture binding
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, diffuseMap);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, specularMap);
+
 	cubeShader.setInt("material.diffuse", 0);
-	// 위와 마찬가지
-	// 그리고 texture의 경우 rendering loop에 없어도 무방하다
-	// render loop에 따라서 변화하는 게 아니기 때문에
 	cubeShader.setInt("material.specular", 1);
 
 	while(!glfwWindowShouldClose(window))
@@ -142,42 +145,17 @@ int main()
 		processInput(window);
 		captureImage("saved_image/image.png", window);
 
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClearColor(0.1f, 0.12f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// 위에서 0번쨰 texture를 material.diffuse에
-		// 1번째 texture를 material.specular에 할당하였으므로
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, diffuseMap);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, specularMap);
-
-
 		cubeShader.use();
-		// fragment Shader 에 전달할 uniform들
-
-		// viewPose가 있어야 specular lighting 을 수행할 수 있음 
 		cubeShader.setVec3("viewPos", camera.Position);
 		cubeShader.setFloat("material.shininess", 32.0f);
-		
-		// spot lighting 에서는 light position 을 camera Postion으로함
-		cubeShader.setVec3("light.position", camera.Position);
-		
-		// light의 특성 정해주기
+		cubeShader.setVec3("dirLight.direction", glm::vec3(15.0f, 15.0f, 15.0f));
 		float iParam = 1.0f;
-		cubeShader.setVec3("light.ambient",  glm::vec3(0.2f * iParam));
-		cubeShader.setVec3("light.diffuse",  glm::vec3(0.5f * iParam));
-		cubeShader.setVec3("light.specular", glm::vec3(1.0f * iParam));
-
-
-		cubeShader.setVec3("light.direction", camera.Front);
-		// attenuation 구현파라미터
-		cubeShader.setFloat("light.constant", 1.0f);
-		cubeShader.setFloat("light.linear", 0.09f);
-		cubeShader.setFloat("light.quadratic", 0.032f);
-		// cutoff 파라미터 
-		cubeShader.setFloat("light.innerCutOff", glm::cos(glm::radians(12.5f)));
-		cubeShader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+		cubeShader.setVec3("dirLight.ambient",  glm::vec3(0.2f * iParam));
+		cubeShader.setVec3("dirLight.diffuse",  glm::vec3(0.5f * iParam));
+		cubeShader.setVec3("dirLight.specular", glm::vec3(1.0f * iParam));
 
 		// Projection matrix의 zoom 값은 마우스 scroll 에 따라 변화가 가능하기 떄문에
 		// render loop 에 넣었으나, 아래의 for loop에는 넣지 않아도 된다. (어차피 공통적이기 때문)
