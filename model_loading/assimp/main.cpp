@@ -1,8 +1,3 @@
-#include <glad/glad.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <GLFW/glfw3.h>
 #include <stdexcept>
 #include <stdio.h>
 #include <iostream>
@@ -25,8 +20,6 @@ void captureImage(std::string&& file_path, GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 GLuint loadTexture(const char* imagePath);
-string shader_uniform_formatter(string&& fmt, int idx);
-
 
 
 Camera camera(glm::vec3(0.0f, 1.0f, 3.0f));
@@ -82,12 +75,6 @@ int main()
 		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 
-	glm::vec3 pointLightPositions[] = {
-		glm::vec3( 0.7f,  0.2f,  2.0f),
-		glm::vec3( 2.3f, -3.3f, -4.0f),
-		glm::vec3(-4.0f,  2.0f, -12.0f),
-		glm::vec3( 0.0f,  0.0f, -3.0f)
-	};  
 
 	GLuint VAO, VBO;
 	glGenVertexArrays(1, &VAO);
@@ -104,8 +91,8 @@ int main()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 6));
 	glEnableVertexAttribArray(2);
 
-	// glBindVertexArray(0);
-	// glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	GLuint lampVAO;
 	glGenVertexArrays(1, &lampVAO);
@@ -116,13 +103,12 @@ int main()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	// glBindVertexArray(0);
-	// glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// -> texture 
 	GLuint diffuseMap  = loadTexture("image/container2.png");
 	GLuint specularMap = loadTexture("image/container2_specular.png");
-	GLuint lightTextureMap = loadTexture("image/flashlight_texture.jpg");
 
 	Shader cubeShader ("shaders/cube_v.glsl", "shaders/cube_f.glsl");
 	Shader lampShader ("shaders/lamp_v.glsl", "shaders/lamp_f.glsl");
@@ -132,16 +118,13 @@ int main()
 	glfwSetScrollCallback(window, scroll_callback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-
-
 	cubeShader.use();
-	// texture binding
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, diffuseMap);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, specularMap);
-
+	// fragment Shader 의 material object 의 diffuse 값을 첫번쨰로 선언한 Texture 로 넣는다는 얘기
+	// shader에서 sampler2D 타입이기 때문에 texture를 받는다. 
 	cubeShader.setInt("material.diffuse", 0);
+	// 위와 마찬가지
+	// 그리고 texture의 경우 rendering loop에 없어도 무방하다
+	// render loop에 따라서 변화하는 게 아니기 때문에
 	cubeShader.setInt("material.specular", 1);
 
 	while(!glfwWindowShouldClose(window))
@@ -153,33 +136,45 @@ int main()
 		processInput(window);
 		captureImage("saved_image/image.png", window);
 
-		glClearColor(0.05f, 0.08f, 0.07f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// 위에서 0번쨰 texture를 material.diffuse에
+		// 1번째 texture를 material.specular에 할당하였으므로
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffuseMap);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, specularMap);
+
+
 		cubeShader.use();
+		// fragment Shader 에 전달할 uniform들
+
+		// viewPose가 있어야 specular lighting 을 수행할 수 있음 
 		cubeShader.setVec3("viewPos", camera.Position);
 		cubeShader.setFloat("material.shininess", 32.0f);
 		
-		// 1 directional light
+		// spot lighting 에서는 light position 을 camera Postion으로함
+		cubeShader.setVec3("light.position", camera.Position);
+		
+		// light의 특성 정해주기
 		float iParam = 1.0f;
-		cubeShader.setVec3("directionalLight.direction", glm::vec3(1.0f, 1.0f, -1.0f));
-		cubeShader.setVec3("directionalLight.ambient",  glm::vec3(0.2f * iParam));
-		cubeShader.setVec3("directionalLight.diffuse",  glm::vec3(0.5f * iParam));
-		cubeShader.setVec3("directionalLight.specular", glm::vec3(1.0f * iParam));
+		cubeShader.setVec3("light.ambient",  glm::vec3(0.2f * iParam));
+		cubeShader.setVec3("light.diffuse",  glm::vec3(0.5f * iParam));
+		cubeShader.setVec3("light.specular", glm::vec3(1.0f * iParam));
 
-		// 4 point lights
-		for (int i = 0; i < 4; i++)
-		{
-			glm::vec3 pointLight_position = pointLightPositions[i];
-			cubeShader.setVec3( shader_uniform_formatter("pointLights[%i].position", i), pointLight_position);
-			cubeShader.setFloat(shader_uniform_formatter("pointLights[%i].constant", i), 1.0f);
-			cubeShader.setFloat(shader_uniform_formatter("pointLights[%i].linearParam", i), 0.09f);
-			cubeShader.setFloat(shader_uniform_formatter("pointLights[%i].quadraticParam", i), 0.032f);
-			cubeShader.setVec3( shader_uniform_formatter("pointLights[%i].ambient", i),  glm::vec3(0.2f * iParam));
-			cubeShader.setVec3( shader_uniform_formatter("pointLights[%i].diffuse", i),  glm::vec3(0.5f * iParam));
-			cubeShader.setVec3( shader_uniform_formatter("pointLights[%i].specular", i), glm::vec3(1.0f * iParam));
-		}
 
+		cubeShader.setVec3("light.direction", camera.Front);
+		// attenuation 구현파라미터
+		cubeShader.setFloat("light.constant", 1.0f);
+		cubeShader.setFloat("light.linear", 0.09f);
+		cubeShader.setFloat("light.quadratic", 0.032f);
+		// cutoff 파라미터 
+		cubeShader.setFloat("light.innerCutOff", glm::cos(glm::radians(12.5f)));
+		cubeShader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+
+		// Projection matrix의 zoom 값은 마우스 scroll 에 따라 변화가 가능하기 떄문에
+		// render loop 에 넣었으나, 아래의 for loop에는 넣지 않아도 된다. (어차피 공통적이기 때문)
 		glm::mat4 projection  = glm::mat4(1.0f);
 		projection = glm::perspective(
 			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
@@ -194,20 +189,6 @@ int main()
 			cubeShader.setMat4("projection", projection);
 			cubeShader.setMat4("view", camera.GetViewMatrix());
 			cubeShader.setMat4("model", model);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-
-
-		lampShader.use();
-		glBindVertexArray(lampVAO);
-		for(int i = 0; i < 4; i++)
-		{
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, pointLightPositions[i]);
-			model = glm::scale(model, glm::vec3(0.3f));
-			lampShader.setMat4("projection", projection);
-			lampShader.setMat4("view", camera.GetViewMatrix());
-			lampShader.setMat4("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
@@ -319,13 +300,3 @@ GLuint loadTexture(const char* imagePath)
 
 }
 
-
-string shader_uniform_formatter(string&& fmt, int idx)
-{
-	
-	int sz = snprintf(nullptr, 0, fmt.c_str(), idx);
-	char buf[sz + 1];
-	snprintf(buf, sizeof(buf), fmt.c_str(), idx);
-	string baseStr(buf);
-	return baseStr;
-}
