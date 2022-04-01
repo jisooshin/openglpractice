@@ -57,75 +57,6 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 
-	float vertices[288];
-	ifstream in("data/vertices_288.dat", ios::in | ios::binary);
-	in.read((char*)&vertices, sizeof(vertices));
-
-
-	glm::vec3 cubePositions[] = {
-		glm::vec3( 0.0f,  0.0f,  0.0f),
-		glm::vec3( 2.0f,  5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3( 2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3( 1.3f, -2.0f, -2.5f),
-		glm::vec3( 1.5f,  2.0f, -2.5f),
-		glm::vec3( 1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f)
-	};
-
-
-	GLuint VAO, VBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glBindVertexArray(VAO);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 3));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 6));
-	glEnableVertexAttribArray(2);
-
-	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	GLuint lampVAO;
-	glGenVertexArrays(1, &lampVAO);
-
-	glBindVertexArray(lampVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	// -> texture 
-	GLuint diffuseMap  = loadTexture("image/container2.png");
-	GLuint specularMap = loadTexture("image/container2_specular.png");
-
-	Shader cubeShader ("shaders/cube_v.glsl", "shaders/cube_f.glsl");
-	Shader lampShader ("shaders/lamp_v.glsl", "shaders/lamp_f.glsl");
-
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
-	glfwSetScrollCallback(window, scroll_callback);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-	cubeShader.use();
-	// fragment Shader 의 material object 의 diffuse 값을 첫번쨰로 선언한 Texture 로 넣는다는 얘기
-	// shader에서 sampler2D 타입이기 때문에 texture를 받는다. 
-	cubeShader.setInt("material.diffuse", 0);
-	// 위와 마찬가지
-	// 그리고 texture의 경우 rendering loop에 없어도 무방하다
-	// render loop에 따라서 변화하는 게 아니기 때문에
-	cubeShader.setInt("material.specular", 1);
 
 	while(!glfwWindowShouldClose(window))
 	{
@@ -136,69 +67,11 @@ int main()
 		processInput(window);
 		captureImage("saved_image/image.png", window);
 
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// 위에서 0번쨰 texture를 material.diffuse에
-		// 1번째 texture를 material.specular에 할당하였으므로
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, diffuseMap);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, specularMap);
-
-
-		cubeShader.use();
-		// fragment Shader 에 전달할 uniform들
-
-		// viewPose가 있어야 specular lighting 을 수행할 수 있음 
-		cubeShader.setVec3("viewPos", camera.Position);
-		cubeShader.setFloat("material.shininess", 32.0f);
-		
-		// spot lighting 에서는 light position 을 camera Postion으로함
-		cubeShader.setVec3("light.position", camera.Position);
-		
-		// light의 특성 정해주기
-		float iParam = 1.0f;
-		cubeShader.setVec3("light.ambient",  glm::vec3(0.2f * iParam));
-		cubeShader.setVec3("light.diffuse",  glm::vec3(0.5f * iParam));
-		cubeShader.setVec3("light.specular", glm::vec3(1.0f * iParam));
-
-
-		cubeShader.setVec3("light.direction", camera.Front);
-		// attenuation 구현파라미터
-		cubeShader.setFloat("light.constant", 1.0f);
-		cubeShader.setFloat("light.linear", 0.09f);
-		cubeShader.setFloat("light.quadratic", 0.032f);
-		// cutoff 파라미터 
-		cubeShader.setFloat("light.innerCutOff", glm::cos(glm::radians(12.5f)));
-		cubeShader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
-
-		// Projection matrix의 zoom 값은 마우스 scroll 에 따라 변화가 가능하기 떄문에
-		// render loop 에 넣었으나, 아래의 for loop에는 넣지 않아도 된다. (어차피 공통적이기 때문)
-		glm::mat4 projection  = glm::mat4(1.0f);
-		projection = glm::perspective(
-			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-
-		glBindVertexArray(VAO);
-		for (int i = 0; i < 10; i++)
-		{
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
-			float angle = 20.0f * i * glfwGetTime();
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.2f));
-			cubeShader.setMat4("projection", projection);
-			cubeShader.setMat4("view", camera.GetViewMatrix());
-			cubeShader.setMat4("model", model);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteVertexArrays(1, &lampVAO);
-	glDeleteBuffers(1, &VBO);
 	glfwTerminate();
 	return 0;
 }

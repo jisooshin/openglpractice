@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <iostream>
+#include <vector>
+#include <string>
 
 struct Hamster
 {
@@ -12,10 +14,11 @@ struct Hamster
 using namespace std;
 int main()
 {
-	cout << offsetof(Hamster, a) << endl;
-	cout << offsetof(Hamster, b) << endl;
-	cout << offsetof(Hamster, c) << endl;
-	cout << offsetof(Hamster, d) << endl;
+
+	vector<int> a = {1, 2, 3, 4};
+
+
+	cout << (&a[0] == a.data()) << endl;
 
 	return 0;
 }
