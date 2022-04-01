@@ -28,6 +28,10 @@ enum Camera_Movement
 };
 
 using namespace std;
+
+// forward declaration
+GLuint TextureFromFile(const char* path, const string& directory, bool gamma);
+
 class Shader
 {
 	public:
@@ -134,13 +138,14 @@ struct Vertex
 {
 	glm::vec3 Position;
 	glm::vec3 Normal;
-	glm::vec3 TexCoord;
+	glm::vec2 TexCoord;
 };
 
 struct Texture
 {
 	GLuint id;
 	string type; // specular 인지 diffuse 인지 등을 저장하는 type
+	string path;
 };
 
 class Mesh
@@ -220,10 +225,104 @@ class Model
 		vector<Mesh> meshes;
 		string directory;
 		void loadModel(string path){
-			Assimp::Importer importer;
-			const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+			Assimp::Importer import;
+			const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+			if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+			{
+				cout << "ERROR::ASSIMP::"<< import.GetErrorString() << endl;
+			}
+			directory = path.substr(0, path.find_last_of('/'));
+			processNode(scene->mRootNode, scene);
 		}
-		void processNode(aiNode* node, const aiScene* scene);
-		void processMesh(aiMesh* mesh, const aiScene* scene);
-		vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName);
+		void processNode(aiNode* node, const aiScene* scene)
+		{
+			for (size_t i = 0; i < node->mNumMeshes; i++)	
+			{
+				aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+				meshes.emplace_back(processMesh(mesh, scene));
+			}
+
+			for (size_t i = 0; i < node->mNumChildren; i++)
+			{
+				processNode(node->mChildren[i], scene);
+			}
+		}
+		Mesh processMesh(aiMesh* mesh, const aiScene* scene)
+		{
+			vector<Vertex>  vertices;
+			vector<GLuint>  indices;
+			vector<Texture> textures;
+
+			for (size_t i = 0; i < mesh->mNumVertices; i++)
+			{
+				Vertex vertex;
+				glm::vec3 tmpVector3;
+				tmpVector3.x = mesh->mVertices[i].x;
+				tmpVector3.y = mesh->mVertices[i].y;
+				tmpVector3.z = mesh->mVertices[i].z;
+				vertex.Position = tmpVector3;
+
+				tmpVector3.x = mesh->mNormals[i].x;
+				tmpVector3.y = mesh->mNormals[i].y;
+				tmpVector3.z = mesh->mNormals[i].z;
+				vertex.Normal = tmpVector3;
+
+				if (mesh->mTextureCoords[0])
+				{
+					glm::vec2 tmpVector2;
+					tmpVector2.x = mesh->mTextureCoords[0][i].x;
+					tmpVector2.y = mesh->mTextureCoords[0][i].y;
+					vertex.TexCoord = tmpVector2;
+				}
+				else
+				{
+					vertex.TexCoord = glm::vec2(0.0f);
+				}
+
+				vertices.emplace_back(vertex);
+			}
+
+			for (size_t i = 0; i < mesh->mNumFaces; i++)
+			{
+				aiFace face = mesh->mFaces[i];
+				for (size_t j = 0; j < face.mNumIndices; j++)
+				{
+					indices.emplace_back(face.mIndices[j]);
+				}
+			}
+
+			if (mesh->mMaterialIndex >= 0)
+			{
+				aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+				vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+				textures.insert(textures.begin(), diffuseMaps.begin(), diffuseMaps.end());
+				vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_specular");
+				textures.insert(textures.begin(), specularMaps.begin(), specularMaps.end());
+			}
+			return Mesh(vertices, indices, textures);
+		}
+		vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName)
+		{
+			vector<Texture> textures;
+			for (size_t i = 0; i < mat->GetTextureCount(type); i++)
+			{
+				aiString str;
+				mat->GetTexture(type, i, &str);
+			}
+			return textures;
+		}
 };
+
+
+GLuint TextureFromFile(const char* path, const string& directory, bool gamma)
+{
+	string filename = string(path);
+	filename = directory + '/' + filename;
+
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	int width, height, 
+
+
+}
+
