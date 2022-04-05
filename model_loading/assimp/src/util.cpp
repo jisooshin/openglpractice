@@ -1,4 +1,12 @@
 #include "util.hpp"
+#ifndef STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#endif
+#ifndef STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+#endif
 
 using namespace std;
 Shader::Shader(const char* vertexPath, const char* fragPath)
@@ -94,4 +102,38 @@ void Shader::setMat4(const string& name, glm::mat4 value) const
 void Shader::setVec3(const string& name, glm::vec3 v) const
 {
 	glUniform3f(glGetUniformLocation(ID, name.c_str()), v[0], v[1], v[2]);
+}
+
+
+GLuint TextureFromFile(const char *path, const string &directory, bool gamma)
+{
+	string filename = string(path);
+	filename = directory + '/' + filename;
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	int width, height, nChannels;
+	unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nChannels, 0);
+	if (data)
+	{
+		GLenum format;
+		if (nChannels == 1)
+			format = GL_RED;
+		else if (nChannels == 3)
+			format = GL_RGB;
+		else if (nChannels == 4)
+			format = GL_RGBA;
+ 
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		printf("Failed to read image file : %s", filename.c_str());
+	}
+	stbi_image_free(data);
+	return textureID;
 }
