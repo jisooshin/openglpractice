@@ -175,10 +175,15 @@ public:
 			string number;
 			string name = textures[i].type;
 			if (name == "texture_diffuse")
+			{
 				number = to_string(diffuseN++); // 이건 shader에서 texture 가져오기 위한 규칙
+			}
 			else if (name == "texture_specular")
+			{
 				number = to_string(specularN++); // 이건 shader에서 texture 가져오기 위한 규칙
-			shader.setFloat(("material." + name + number).c_str(), i);
+			}
+			// shader.setFloat(("material." + name + number).c_str(), i);
+			shader.setFloat((name + number).c_str(), i);
 			glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		}
 		glActiveTexture(GL_TEXTURE0);
@@ -309,9 +314,9 @@ private:
 		{
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 			vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-			textures.insert(textures.begin(), diffuseMaps.begin(), diffuseMaps.end());
-			vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_specular");
-			textures.insert(textures.begin(), specularMaps.begin(), specularMaps.end());
+			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+			vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 		}
 		return Mesh(vertices, indices, textures);
 	}
@@ -339,6 +344,7 @@ private:
 				Texture texture;
 				texture.id = TextureFromFile(str.C_Str(), directory);
 				texture.type = typeName;
+				cout << typeName << endl;
 				texture.path = str.C_Str();
 				textures.push_back(texture);
 				textures_loaded.push_back(texture);
