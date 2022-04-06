@@ -1,7 +1,7 @@
 #include "util.hpp"
 
 #define WINDOW_WIDTH 1300
-#define WINDOW_HEIGHT 800
+#define WINDOW_HEIGHT 801
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -42,14 +42,12 @@ int main()
 
 	// global
 	glEnable(GL_DEPTH_TEST);
-	// Assimp::Importer importer;
-	// const aiScene* scene = importer.ReadFile("data/bugatti.obj", aiProcess_Triangulate | aiProcess_FlipUVs);
-	// if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-	// {
-	// 	printf("Error\n");
-	// 	return -1;
-	// }
-	// printf("success\n");
+	// Shader myShader("shaders/new/ver.glsl", "shaders/new/frag.glsl");
+	Model myModel("data/backpack/backpack.obj");
+
+	glm::mat4 projection;
+	projection = glm::perspective(
+		glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 
 
 	while(!glfwWindowShouldClose(window))
@@ -59,6 +57,10 @@ int main()
 		lastFrame = currentFrame;
 
 		processInput(window);
+
+
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

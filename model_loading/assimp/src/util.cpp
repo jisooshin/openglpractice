@@ -105,7 +105,7 @@ void Shader::setVec3(const string& name, glm::vec3 v) const
 }
 
 
-GLuint TextureFromFile(const char *path, const string &directory, bool gamma)
+GLuint TextureFromFile(const char *path, const string &directory)
 {
 	string filename = string(path);
 	filename = directory + '/' + filename;

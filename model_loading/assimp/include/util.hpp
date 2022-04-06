@@ -1,8 +1,8 @@
 #pragma once
-
 #include <glad/glad.h>
 #include <string>
 #include <iostream>
+#include <cstring>
 #include <fstream>
 #include <sstream>
 #include <stdio.h>
@@ -16,7 +16,6 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-
 
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
@@ -35,7 +34,7 @@ enum Camera_Movement
 using namespace std;
 
 // declaration
-GLuint TextureFromFile(const char *path, const string &directory, bool gamma);
+GLuint TextureFromFile(const char *path, const string &directory);
 
 class Shader
 {
@@ -221,7 +220,7 @@ class Model
 // 여러 mesh들이 모여 model이 된다
 {
 public:
-	Model(char *path) // 이 path 는 model을 담아두는 파일이 될 것
+	Model(string path) // 이 path 는 model을 담아두는 파일이 될 것
 	{
 		loadModel(path);
 	}
@@ -234,27 +233,29 @@ public:
 	}
 
 private:
+	vector<Texture> textures_loaded;
 	vector<Mesh> meshes;
 	string directory;
 	void loadModel(string path)
 	{
-		Assimp::Importer import;
-		const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+		Assimp::Importer importer;
+		const aiScene* scene = importer.ReadFile(
+			path,
+			aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
-			cout << "ERROR::ASSIMP::" << import.GetErrorString() << endl;
+			cout << "ERROR::ASSIMP::" << importer.GetErrorString() << endl;
 		}
-		directory = path.substr(0, path.find_last_of('/'));
+		directory = path.substr(0, path.find_last_of('/')); // 나중에 텍스쳐 불러올때 사용
 		processNode(scene->mRootNode, scene);
 	}
 	void processNode(aiNode *node, const aiScene *scene)
 	{
 		for (size_t i = 0; i < node->mNumMeshes; i++)
 		{
-			aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
+			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 			meshes.emplace_back(processMesh(mesh, scene));
 		}
-
 		for (size_t i = 0; i < node->mNumChildren; i++)
 		{
 			processNode(node->mChildren[i], scene);
@@ -306,7 +307,7 @@ private:
 
 		if (mesh->mMaterialIndex >= 0)
 		{
-			aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
+			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 			vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 			textures.insert(textures.begin(), diffuseMaps.begin(), diffuseMaps.end());
 			vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_specular");
@@ -321,6 +322,27 @@ private:
 		{
 			aiString str;
 			mat->GetTexture(type, i, &str);
+
+			bool skip = false;
+			for (const auto elem: textures_loaded)
+			{
+				if(strcmp(str.C_Str(), elem.path.data()) == 0)
+				{
+					textures.push_back(elem);
+					skip = true;
+					break;
+				}
+			}
+
+			if (!skip)
+			{
+				Texture texture;
+				texture.id = TextureFromFile(str.C_Str(), directory);
+				texture.type = typeName;
+				texture.path = str.C_Str();
+				textures.push_back(texture);
+				textures_loaded.push_back(texture);
+			}
 		}
 		return textures;
 	}
