@@ -9,7 +9,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 
-Camera camera(glm::vec3(0.0f, 1.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float deltaTime  = 0.0f;
 float lastFrame  = 0.0f;
 bool  firstMouse = true;
@@ -42,14 +42,10 @@ int main()
 
 	// global
 	glEnable(GL_DEPTH_TEST);
-	// Shader myShader("shaders/new/ver.glsl", "shaders/new/frag.glsl");
+	Shader myShader("shaders/new/ver.glsl", "shaders/new/frag.glsl");
 	Model myModel("data/backpack/backpack.obj");
 
-	glm::mat4 projection;
-	projection = glm::perspective(
-		glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-
-
+	
 	while(!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -58,9 +54,24 @@ int main()
 
 		processInput(window);
 
-
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+		myShader.use();
+		glm::mat4 view = camera.GetViewMatrix();
+		glm::mat4 projection(1.0f);
+		projection = glm::perspective(
+			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 model(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+
+		myShader.setMat4("view", view);
+		myShader.setMat4("projection", projection);
+		myShader.setMat4("model", model);
+
+		myModel.Draw(myShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
