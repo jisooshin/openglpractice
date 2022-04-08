@@ -5,6 +5,7 @@
 #include <cstring>
 #include <fstream>
 #include <sstream>
+#include <cstdio>
 #include <stdio.h>
 #include <vector>
 #include <stdexcept>
@@ -35,6 +36,7 @@ using namespace std;
 
 // declaration
 GLuint TextureFromFile(const char *path, const string &directory);
+string format_stringi(string &&fmt, int idx);
 
 class Shader
 {
@@ -174,16 +176,16 @@ public:
 			glActiveTexture(GL_TEXTURE0 + i);
 			string number;
 			string name = textures[i].type;
+			string uniformName;
 			if (name == "texture_diffuse")
 			{
-				number = to_string(diffuseN++); // 이건 shader에서 texture 가져오기 위한 규칙
+				uniformName = format_stringi("material[%i].diffuse", i);
 			}
 			else if (name == "texture_specular")
 			{
-				number = to_string(specularN++); // 이건 shader에서 texture 가져오기 위한 규칙
+				uniformName = format_stringi("material[%i].specular", i);
 			}
-			// shader.setFloat(("material." + name + number).c_str(), i);
-			shader.setFloat((name + number).c_str(), i);
+			shader.setFloat(uniformName.c_str(), i);
 			glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		}
 		glActiveTexture(GL_TEXTURE0);
@@ -258,7 +260,7 @@ private:
 	{
 		for (size_t i = 0; i < node->mNumMeshes; i++)
 		{
-			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+			aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
 			meshes.emplace_back(processMesh(mesh, scene));
 		}
 		for (size_t i = 0; i < node->mNumChildren; i++)
@@ -312,7 +314,7 @@ private:
 
 		if (mesh->mMaterialIndex >= 0)
 		{
-			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+			aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 			vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 			vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
@@ -329,9 +331,9 @@ private:
 			mat->GetTexture(type, i, &str);
 
 			bool skip = false;
-			for (const auto elem: textures_loaded)
+			for (const auto elem : textures_loaded)
 			{
-				if(strcmp(str.C_Str(), elem.path.data()) == 0)
+				if (strcmp(str.C_Str(), elem.path.data()) == 0)
 				{
 					textures.push_back(elem);
 					skip = true;
@@ -344,8 +346,8 @@ private:
 				Texture texture;
 				texture.id = TextureFromFile(str.C_Str(), directory);
 				texture.type = typeName;
-				cout << typeName << endl;
 				texture.path = str.C_Str();
+				cout << texture.path << endl;
 				textures.push_back(texture);
 				textures_loaded.push_back(texture);
 			}

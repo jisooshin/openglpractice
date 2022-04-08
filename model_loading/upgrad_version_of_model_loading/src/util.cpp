@@ -139,3 +139,13 @@ GLuint TextureFromFile(const char *path, const string &directory)
 	stbi_image_free(data);
 	return textureID;
 }
+
+string format_stringi(string &&fmt, int idx)
+{
+	const char *format = fmt.c_str();
+	int size = snprintf(nullptr, 0, format, idx);
+	char a[size];
+	snprintf(&a[0], size + 1, format, idx);
+	string result(a);
+	return result;
+}

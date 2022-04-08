@@ -9,7 +9,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
 float deltaTime  = 0.0f;
 float lastFrame  = 0.0f;
 bool  firstMouse = true;
@@ -45,6 +45,57 @@ int main()
 	Shader myShader("shaders/new/ver.glsl", "shaders/new/frag.glsl");
 	Model myModel("data/backpack/backpack.obj");
 
+
+	Assimp::Importer importer;
+	const aiScene* scene = importer.ReadFile(
+		"data/backpack/backpack.obj",
+		aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+	{
+		cout << "ERROR::ASSIMP::" << importer.GetErrorString() << endl;
+	}
+	cout << "SUCCESS" << endl;
+
+	long long result = 0;
+	float x_min = FLT_MIN;
+	float x_max = FLT_MAX;
+	float y_min = FLT_MIN;
+	float y_max = FLT_MIN;
+	float z_min = FLT_MIN;
+	float z_max = FLT_MIN;
+	for (int i = 0; i < scene->mNumMeshes; i++)
+	{
+		for (int j = 0; j < scene->mMeshes[i]->mNumVertices; j++)
+		{
+			x_min = x_min > scene->mMeshes[i]->mVertices[j].x ? scene->mMeshes[i]->mVertices[j].x : x_min;
+			y_min = y_min > scene->mMeshes[i]->mVertices[j].y ? scene->mMeshes[i]->mVertices[j].y : y_min;
+			z_min = z_min > scene->mMeshes[i]->mVertices[j].z ? scene->mMeshes[i]->mVertices[j].z : z_min;
+
+			x_max = x_max < scene->mMeshes[i]->mVertices[j].x ? scene->mMeshes[i]->mVertices[j].x : x_max;
+			y_max = y_max < scene->mMeshes[i]->mVertices[j].y ? scene->mMeshes[i]->mVertices[j].y : y_max;
+			z_max = z_max < scene->mMeshes[i]->mVertices[j].z ? scene->mMeshes[i]->mVertices[j].z : z_max;
+		}
+	}
+	cout << "vertices.. : "<< result << endl;
+	printf("x : (%f, %f)\n", x_min, x_max);
+	printf("y : (%f, %f)\n", y_min, y_max);
+	printf("z : (%f, %f)\n", z_min, z_max);
+
+	
+
+// 	cout << "diffuse : " << scene->mMaterials[1]->GetTextureCount(aiTextureType_DIFFUSE) << endl;
+// 	cout << "spec : "    << scene->mMaterials[1]->GetTextureCount(aiTextureType_SPECULAR) << endl;
+// 	cout << "unknown : " << scene->mMaterials[1]->GetTextureCount(aiTextureType_NORMALS) << endl;
+// 	cout << endl;
+// 
+// 	aiString str;	
+// 	scene->mMaterials[1]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
+// 	cout << str.C_Str() << endl;
+// 	str.Clear();
+// 	scene->mMaterials[1]->GetTexture(aiTextureType_SPECULAR, 0, &str);
+// 	cout << str.C_Str() << endl;
+// 	str.Clear();
+// 
 	
 	while(!glfwWindowShouldClose(window))
 	{
@@ -64,7 +115,7 @@ int main()
 			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 model(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.5));
 
 		myShader.setMat4("view", view);
 		myShader.setMat4("projection", projection);
