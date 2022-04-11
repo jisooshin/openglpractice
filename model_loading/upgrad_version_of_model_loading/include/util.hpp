@@ -153,6 +153,7 @@ struct Texture
 	GLuint id;	 // Gpu 에 올려놓는 Texture의 id
 	string type; // specular 인지 diffuse 인지 등을 저장하는 type
 	string path; // filePath (Texture를 나타내는 이미지 파일이 따로 있는 경우를 나타내기 위함인듯 )
+	size_t materialIndex = 0;
 };
 
 class Mesh
@@ -179,17 +180,21 @@ public:
 			string uniformName;
 			if (name == "texture_diffuse")
 			{
-				uniformName = format_stringi("material[%i].diffuse", i);
+				uniformName = format_stringi("material[%i].diffuse", textures[i].materialIndex);
 			}
 			else if (name == "texture_specular")
 			{
-				uniformName = format_stringi("material[%i].specular", i);
+				uniformName = format_stringi("material[%i].specular", textures[i].materialIndex);
 			}
-			shader.setFloat(uniformName.c_str(), i);
+			else if (name == "texture_normal")
+			{
+				uniformName = format_stringi("material[%i].normal", textures[i].materialIndex);
+			}
+
+			shader.setInt(uniformName.c_str(), (int)i);
 			glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		}
-		glActiveTexture(GL_TEXTURE0);
-
+		// glActiveTexture(GL_TEXTURE0);
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
@@ -253,6 +258,7 @@ private:
 	vector<Mesh> meshes;
 	vector<Texture> textures_loaded;
 	string directory;
+	size_t materialIndex = 0;
 
 	void loadModel(string path)
 	{
@@ -386,14 +392,17 @@ private:
 		if (mesh->mMaterialIndex >= 0)
 		{
 			aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
-			vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+			vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", materialIndex);
 			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-			vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+			vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", materialIndex);
 			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+			vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal", materialIndex);
+			textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+			materialIndex++;
 		}
 		return Mesh(vertices, indices, textures);
 	}
-	vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName)
+	vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName, size_t materialIndex)
 	{
 		vector<Texture> textures;
 		for (size_t i = 0; i < mat->GetTextureCount(type); i++)
@@ -418,6 +427,7 @@ private:
 				texture.id = TextureFromFile(str.C_Str(), directory);
 				texture.type = typeName;
 				texture.path = str.C_Str();
+				texture.materialIndex = materialIndex;
 				cout << texture.path << endl;
 				textures.push_back(texture);
 				textures_loaded.push_back(texture);

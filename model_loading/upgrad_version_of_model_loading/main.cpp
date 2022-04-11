@@ -42,49 +42,13 @@ int main()
 	// global
 	glEnable(GL_DEPTH_TEST);
 	Shader myShader("shaders/new/ver.glsl", "shaders/new/frag.glsl");
-	Model myModel("data/cat/12221_Cat_v1_l3.obj");
-
-	/*
-	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(
-		"data/backpack/backpack.obj",
-		aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
-	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-	{
-		cout << "ERROR::ASSIMP::" << importer.GetErrorString() << endl;
-	}
-	cout << "SUCCESS" << endl;
-
-	long long result = 0;
-	float x_min = FLT_MIN;
-	float x_max = FLT_MAX;
-	float y_min = FLT_MIN;
-	float y_max = FLT_MIN;
-	float z_min = FLT_MIN;
-	float z_max = FLT_MIN;
-	for (int i = 0; i < scene->mNumMeshes; i++)
-	{
-		for (int j = 0; j < scene->mMeshes[i]->mNumVertices; j++)
-		{
-			x_min = x_min > scene->mMeshes[i]->mVertices[j].x ? scene->mMeshes[i]->mVertices[j].x : x_min;
-			y_min = y_min > scene->mMeshes[i]->mVertices[j].y ? scene->mMeshes[i]->mVertices[j].y : y_min;
-			z_min = z_min > scene->mMeshes[i]->mVertices[j].z ? scene->mMeshes[i]->mVertices[j].z : z_min;
-
-			x_max = x_max < scene->mMeshes[i]->mVertices[j].x ? scene->mMeshes[i]->mVertices[j].x : x_max;
-			y_max = y_max < scene->mMeshes[i]->mVertices[j].y ? scene->mMeshes[i]->mVertices[j].y : y_max;
-			z_max = z_max < scene->mMeshes[i]->mVertices[j].z ? scene->mMeshes[i]->mVertices[j].z : z_max;
-		}
-	}
-	cout << "vertices.. : "<< result << endl;
-	printf("x : (%f, %f)\n", x_min, x_max);
-	printf("y : (%f, %f)\n", y_min, y_max);
-	printf("z : (%f, %f)\n", z_min, z_max);
-	*/
+	Model myModel("data/backpack/backpack.obj");
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
+
 
 	while(!glfwWindowShouldClose(window))
 	{
@@ -109,7 +73,6 @@ int main()
 		myShader.setMat4("view", view);
 		myShader.setMat4("projection", projection);
 		myShader.setMat4("model", model);
-
 		myModel.Draw(myShader);
 
 		glfwSwapBuffers(window);
