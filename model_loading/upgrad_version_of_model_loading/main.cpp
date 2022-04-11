@@ -8,7 +8,6 @@ void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
 float deltaTime  = 0.0f;
 float lastFrame  = 0.0f;
@@ -43,9 +42,9 @@ int main()
 	// global
 	glEnable(GL_DEPTH_TEST);
 	Shader myShader("shaders/new/ver.glsl", "shaders/new/frag.glsl");
-	Model myModel("data/backpack/backpack.obj");
+	Model myModel("data/cat/12221_Cat_v1_l3.obj");
 
-
+	/*
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(
 		"data/backpack/backpack.obj",
@@ -80,23 +79,13 @@ int main()
 	printf("x : (%f, %f)\n", x_min, x_max);
 	printf("y : (%f, %f)\n", y_min, y_max);
 	printf("z : (%f, %f)\n", z_min, z_max);
+	*/
 
-	
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 
-// 	cout << "diffuse : " << scene->mMaterials[1]->GetTextureCount(aiTextureType_DIFFUSE) << endl;
-// 	cout << "spec : "    << scene->mMaterials[1]->GetTextureCount(aiTextureType_SPECULAR) << endl;
-// 	cout << "unknown : " << scene->mMaterials[1]->GetTextureCount(aiTextureType_NORMALS) << endl;
-// 	cout << endl;
-// 
-// 	aiString str;	
-// 	scene->mMaterials[1]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-// 	cout << str.C_Str() << endl;
-// 	str.Clear();
-// 	scene->mMaterials[1]->GetTexture(aiTextureType_SPECULAR, 0, &str);
-// 	cout << str.C_Str() << endl;
-// 	str.Clear();
-// 
-	
 	while(!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -105,7 +94,7 @@ int main()
 
 		processInput(window);
 
-		glClearColor(0.0f, 0.13f, 0.1f, 1.0f);
+		glClearColor(0.0f, 0.11f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		myShader.use();
@@ -115,7 +104,7 @@ int main()
 			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 model(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.5));
+		model = glm::scale(model, glm::vec3(1.0));
 
 		myShader.setMat4("view", view);
 		myShader.setMat4("projection", projection);

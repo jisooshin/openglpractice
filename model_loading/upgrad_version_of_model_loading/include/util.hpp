@@ -223,6 +223,16 @@ private:
 	}
 };
 
+struct sumCoord
+{
+	int num_vertices = 0;
+	double min_x = DBL_MAX;
+	double max_x = DBL_MIN;
+	double min_y = DBL_MAX;
+	double max_y = DBL_MIN;
+	double min_z = DBL_MAX;
+	double max_z = DBL_MIN;
+};
 class Model
 // 여러 mesh들이 모여 model이 된다
 {
@@ -238,11 +248,12 @@ public:
 			mesh.Draw(shader);
 		}
 	}
-
 private:
-	vector<Texture> textures_loaded;
+	sumCoord sum_of_vertices;
 	vector<Mesh> meshes;
+	vector<Texture> textures_loaded;
 	string directory;
+
 	void loadModel(string path)
 	{
 		Assimp::Importer importer;
@@ -254,10 +265,49 @@ private:
 			cout << "ERROR::ASSIMP::" << importer.GetErrorString() << endl;
 		}
 		directory = path.substr(0, path.find_last_of('/')); // 나중에 텍스쳐 불러올때 사용
+		gettingNecessaryData(scene->mRootNode, scene);
 		processNode(scene->mRootNode, scene);
 	}
+	
+	void gettingNecessaryData_from_mesh(aiMesh *mesh, const aiScene *scene)
+	{
+		for (size_t i = 0; i < mesh->mNumVertices; i++)
+		{
+			Vertex vertex;
+			glm::vec3 tmpVector3;
+			tmpVector3.x = mesh->mVertices[i].x;
+			tmpVector3.y = mesh->mVertices[i].y;
+			tmpVector3.z = mesh->mVertices[i].z;
+
+			// - - - - - - Model Status - - - - - - // 
+			sum_of_vertices.num_vertices++;
+			sum_of_vertices.min_x = sum_of_vertices.min_x < tmpVector3.x ? sum_of_vertices.min_x : tmpVector3.x;
+			sum_of_vertices.max_x = sum_of_vertices.max_x > tmpVector3.x ? sum_of_vertices.max_x : tmpVector3.x;
+			sum_of_vertices.min_y = sum_of_vertices.min_y < tmpVector3.y ? sum_of_vertices.min_y : tmpVector3.y;
+			sum_of_vertices.max_y = sum_of_vertices.max_y > tmpVector3.y ? sum_of_vertices.max_y : tmpVector3.y;
+			sum_of_vertices.min_z = sum_of_vertices.min_z < tmpVector3.z ? sum_of_vertices.min_z : tmpVector3.z;
+			sum_of_vertices.max_z = sum_of_vertices.max_z > tmpVector3.z ? sum_of_vertices.max_z : tmpVector3.z;
+		}
+	}
+
+	void gettingNecessaryData(aiNode *node, const aiScene *scene)
+	{
+
+		for (size_t i = 0; i < node->mNumMeshes; i++)
+		{
+			aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
+			gettingNecessaryData_from_mesh(mesh, scene);
+		}
+
+		for (size_t i = 0; i < node->mNumChildren; i++)
+		{
+			gettingNecessaryData(node->mChildren[i], scene);
+		}
+	}
+
 	void processNode(aiNode *node, const aiScene *scene)
 	{
+
 		for (size_t i = 0; i < node->mNumMeshes; i++)
 		{
 			aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
@@ -268,11 +318,24 @@ private:
 			processNode(node->mChildren[i], scene);
 		}
 	}
+
 	Mesh processMesh(aiMesh *mesh, const aiScene *scene)
 	{
 		vector<Vertex> vertices;
 		vector<GLuint> indices;
 		vector<Texture> textures;
+
+		double bbox_x = sum_of_vertices.max_x - sum_of_vertices.min_x;
+		double bbox_y = sum_of_vertices.max_y - sum_of_vertices.min_y;
+		double bbox_z = sum_of_vertices.max_z - sum_of_vertices.min_z;
+		double max_size = bbox_x < bbox_y ? bbox_x : bbox_y;
+		max_size = max_size < bbox_z ? max_size : bbox_z;
+
+
+		double x_offset = (sum_of_vertices.max_x + sum_of_vertices.min_x) / 2.0;
+		double y_offset = (sum_of_vertices.max_y + sum_of_vertices.min_y) / 2.0;
+		double z_offset = (sum_of_vertices.max_z + sum_of_vertices.min_z) / 2.0;
+
 
 		for (size_t i = 0; i < mesh->mNumVertices; i++)
 		{
@@ -282,6 +345,14 @@ private:
 			tmpVector3.y = mesh->mVertices[i].y;
 			tmpVector3.z = mesh->mVertices[i].z;
 			vertex.Position = tmpVector3;
+
+			vertex.Position.x -= x_offset;
+			vertex.Position.y -= y_offset;
+			vertex.Position.z -= z_offset;
+			vertex.Position.x = vertex.Position.x / (max_size / 2.0);
+			vertex.Position.y = vertex.Position.y / (max_size / 2.0);
+			vertex.Position.z = vertex.Position.z / (max_size / 2.0);
+
 
 			tmpVector3.x = mesh->mNormals[i].x;
 			tmpVector3.y = mesh->mNormals[i].y;

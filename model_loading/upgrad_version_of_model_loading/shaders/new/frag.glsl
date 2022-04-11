@@ -10,8 +10,8 @@ struct Material
 	float shininess;
 	
 };
-// 여러 개의 texture가 있을 경우에는 어떻게 하면 좋을까
-uniform Material material[3];
+
+uniform Material material[3]; // 일단 3개만 선언해놓고 판단
 
 void main()
 {
