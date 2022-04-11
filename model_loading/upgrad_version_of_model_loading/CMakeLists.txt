@@ -5,6 +5,7 @@ set ( PROJECT_VERSION_MAJOR 0 )
 set ( PROJECT_VERSION_MINOR 1 )
 set ( CMAKE_CXX_STANDARD 17 )
 set ( CMAKE_BUILD_TYPE Debug )
+set ( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_library(glad "${CMAKE_SOURCE_DIR}/include/glad/glad.h" "${CMAKE_SOURCE_DIR}/src/glad.c")
 
@@ -15,7 +16,6 @@ set( MYAPP "${CMAKE_PROJECT_NAME}_${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MIN
 
 add_executable( ${MYAPP} ${SRC_FILES} )
 target_link_libraries(${MYAPP} glad glfw3  X11 Xi Xrandr Xcursor rt m pthread dl Xxf86vm Xinerama assimp z )
-set_target_properties(${MYAPP} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 find_package( OpenGL REQUIRED )
 add_compile_options( -g -Wall )
@@ -24,3 +24,4 @@ add_compile_options( -g -Wall )
 message( STATUS "Compiler Info")
 message( STATUS " - Path     \t: ${CMAKE_CXX_COMPILER}")
 message( STATUS " - Version  \t: ${CMAKE_CXX_COMPILER_VERSION}")
+

@@ -22,7 +22,7 @@ uniform Material material[3]; // 일단 3개만 선언해놓고 판단
 
 void main()
 {
-	FragColor = texture(material[0].normal, TexCoord);
+	FragColor = texture(material[0].specular, TexCoord);
 }
 
 vec3 calculate_point_light(PointLight point, Material material)

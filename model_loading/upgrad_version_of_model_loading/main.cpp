@@ -41,8 +41,8 @@ int main()
 
 	// global
 	glEnable(GL_DEPTH_TEST);
-	Shader myShader("shaders/new/ver.glsl", "shaders/new/frag.glsl");
-	Model myModel("data/backpack/backpack.obj");
+	Shader myShader("../../shaders/new/ver.glsl", "../../shaders/new/frag.glsl");
+	Model myModel("../../data/backpack/backpack.obj");
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
