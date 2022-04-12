@@ -17,6 +17,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/material.h>
 
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
@@ -148,12 +149,21 @@ struct Vertex
 	glm::vec2 TexCoord; // (만약 있다면) 해당 vertex가 Texture 이미지의 어느 좌표에 속하는지에 대한 좌표
 };
 
+struct ColorProperty
+{
+	glm::vec3 ambient  = glm::vec3(1.0f);
+	glm::vec3 diffuse  = glm::vec3(1.0f);
+	glm::vec3 specular = glm::vec3(1.0f);
+};
+
 struct Texture
 {
 	GLuint id;	 // Gpu 에 올려놓는 Texture의 id
 	string type; // specular 인지 diffuse 인지 등을 저장하는 type
 	string path; // filePath (Texture를 나타내는 이미지 파일이 따로 있는 경우를 나타내기 위함인듯 )
 	size_t materialIndex = 0;
+	ColorProperty colorP;
+	float shiness;
 };
 
 class Mesh
@@ -178,6 +188,7 @@ public:
 			string number;
 			string name = textures[i].type;
 			string uniformName;
+			string uniformNameParam;
 			if (name == "texture_diffuse")
 			{
 				uniformName = format_stringi("material[%i].diffuse", textures[i].materialIndex);
@@ -186,9 +197,9 @@ public:
 			{
 				uniformName = format_stringi("material[%i].specular", textures[i].materialIndex);
 			}
-			else if (name == "texture_normal")
+			else if (name == "texture_bump")
 			{
-				uniformName = format_stringi("material[%i].normal", textures[i].materialIndex);
+				uniformName = format_stringi("material[%i].bump", textures[i].materialIndex);
 			}
 
 			shader.setInt(uniformName.c_str(), (int)i);
@@ -238,6 +249,7 @@ struct sumCoord
 	double min_z = DBL_MAX;
 	double max_z = DBL_MIN;
 };
+
 class Model
 // 여러 mesh들이 모여 model이 된다
 {
@@ -396,8 +408,8 @@ private:
 			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 			vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", materialIndex);
 			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-			vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal", materialIndex);
-			textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+			vector<Texture> bumpMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_bump", materialIndex);
+			textures.insert(textures.end(), bumpMaps.begin(), bumpMaps.end());
 			materialIndex++;
 		}
 		return Mesh(vertices, indices, textures);
@@ -428,9 +440,32 @@ private:
 				texture.type = typeName;
 				texture.path = str.C_Str();
 				texture.materialIndex = materialIndex;
-				cout << texture.path << endl;
+				cout << typeName << " : " << texture.path << endl;
+
+				aiColor4D color;
+				aiGetMaterialColor(mat, AI_MATKEY_COLOR_AMBIENT, &color);
+				texture.colorP.ambient.x = color.r;
+				texture.colorP.ambient.y = color.g;
+				texture.colorP.ambient.z = color.b;
+
+				aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &color);
+				texture.colorP.diffuse.x = color.r;
+				texture.colorP.diffuse.y = color.g;
+				texture.colorP.diffuse.z = color.b;
+
+				aiGetMaterialColor(mat, AI_MATKEY_COLOR_SPECULAR, &color);
+				texture.colorP.specular.x = color.r;
+				texture.colorP.specular.y = color.g;
+				texture.colorP.specular.z = color.b;
+
+				float shine;
+				aiGetMaterialFloat(mat, AI_MATKEY_SHININESS, &shine);
+				texture.shiness = shine / 4.0f;
+
 				textures.push_back(texture);
 				textures_loaded.push_back(texture);
+
+
 			}
 		}
 		return textures;

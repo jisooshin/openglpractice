@@ -149,3 +149,4 @@ string format_stringi(string &&fmt, int idx)
 	string result(a);
 	return result;
 }
+

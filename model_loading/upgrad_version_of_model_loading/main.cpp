@@ -8,7 +8,7 @@ void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float deltaTime  = 0.0f;
 float lastFrame  = 0.0f;
 bool  firstMouse = true;
@@ -41,15 +41,17 @@ int main()
 
 	// global
 	glEnable(GL_DEPTH_TEST);
-	Shader myShader("../../shaders/new/ver.glsl", "../../shaders/new/frag.glsl");
-	Model myModel("../../data/backpack/backpack.obj");
+	Shader _modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
+	Shader _lightShader("../../shaders/lights/ver.glsl", "../../shaders/lights/frag.glsl");
+	Model _backpack("../../data/backpack/backpack.obj");
+	Model _lightball("../../data/circle/circle.obj");
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
-
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	while(!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -58,22 +60,45 @@ int main()
 
 		processInput(window);
 
-		glClearColor(0.0f, 0.11f, 0.1f, 1.0f);
+		glClearColor(0.0f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		myShader.use();
-		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection(1.0f);
 		projection = glm::perspective(
 			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-		glm::mat4 model(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.0));
 
-		myShader.setMat4("view", view);
-		myShader.setMat4("projection", projection);
-		myShader.setMat4("model", model);
-		myModel.Draw(myShader);
+		glm::mat4 _model_view = camera.GetViewMatrix();
+		glm::mat4 _model_model(1.0f);
+		_model_model = glm::translate(_model_model, glm::vec3(0.0f, 0.0f, 0.0f));
+		_model_model = glm::scale(_model_model, glm::vec3(1.0));
+
+		glm::mat4 _light_model(1.0f);
+		glm::vec3 _light_position = glm::vec3(sin(glfwGetTime()) * 2.0f, 2.0f, cos(glfwGetTime()) * 2.0f);
+		_light_model = glm::translate(_light_model, _light_position);
+		_light_model = glm::scale(_light_model, glm::vec3(0.2f));
+
+
+		_modelShader.use();
+		_modelShader.setMat4("view", _model_view);
+		_modelShader.setMat4("projection", projection);
+		_modelShader.setMat4("model", _model_model);
+
+		_modelShader.setVec3("point.position", _light_position);
+		_modelShader.setFloat("point.constant", 1.0f);
+		_modelShader.setFloat("point.linearParam", 0.09f);
+		_modelShader.setFloat("point.quadParam", 0.032f);
+		_modelShader.setVec3("point.cameraPosition", camera.Position);
+		_modelShader.setFloat("point.shiness", 64.0f);
+
+		_backpack.Draw(_modelShader);
+
+
+		_lightShader.use();
+		_lightShader.setMat4("view", _model_view);
+		_lightShader.setMat4("projection", projection);
+		_lightShader.setMat4("model", _light_model);
+		_lightball.Draw(_lightShader);
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
