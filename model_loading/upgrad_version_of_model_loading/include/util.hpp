@@ -59,19 +59,7 @@ class Camera
 public:
 	glm::vec3 Position, Front, Up, Right, WorldUp;
 	float Yaw, Pitch, MovementSpeed, MouseSensitivity, Zoom;
-	Camera(
-		glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
-		float yaw = YAW,
-		float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)),
-							   MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
-	{
-		Position = position;
-		WorldUp = up;
-		Yaw = yaw;
-		Pitch = pitch;
-		updateCameraVectors();
-	}
+	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH);
 	Camera(
 		float posX, float posY, float posZ,
 		float upX, float upY, float upZ,
