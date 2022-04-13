@@ -8,7 +8,7 @@ void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
 float deltaTime  = 0.0f;
 float lastFrame  = 0.0f;
 bool  firstMouse = true;
@@ -43,7 +43,7 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	Shader _modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
 	Shader _lightShader("../../shaders/lights/ver.glsl", "../../shaders/lights/frag.glsl");
-	Model _backpack("../../data/backpack/backpack.obj");
+	Model _backpack("../../data/sleeping_cat/sleeping_cat.obj");
 	Model _lightball("../../data/circle/circle.obj");
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -70,10 +70,11 @@ int main()
 		glm::mat4 _model_view = camera.GetViewMatrix();
 		glm::mat4 _model_model(1.0f);
 		_model_model = glm::translate(_model_model, glm::vec3(0.0f, 0.0f, 0.0f));
-		_model_model = glm::scale(_model_model, glm::vec3(1.0));
+		// _model_model = glm::rotate(_model_model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		_model_model = glm::scale(_model_model, glm::vec3(0.5));
 
 		glm::mat4 _light_model(1.0f);
-		glm::vec3 _light_position = glm::vec3(sin(glfwGetTime()) * 2.0f, 2.0f, cos(glfwGetTime()) * 2.0f);
+		glm::vec3 _light_position = glm::vec3(sin(glfwGetTime()) * 2.0f, 0.0f, cos(glfwGetTime()) * 2.0f);
 		_light_model = glm::translate(_light_model, _light_position);
 		_light_model = glm::scale(_light_model, glm::vec3(0.2f));
 
@@ -83,12 +84,12 @@ int main()
 		_modelShader.setMat4("projection", projection);
 		_modelShader.setMat4("model", _model_model);
 
-		_modelShader.setVec3("point.position", _light_position);
-		_modelShader.setFloat("point.constant", 1.0f);
-		_modelShader.setFloat("point.linearParam", 0.09f);
-		_modelShader.setFloat("point.quadParam", 0.032f);
-		_modelShader.setVec3("point.cameraPosition", camera.Position);
-		_modelShader.setFloat("point.shiness", 64.0f);
+		_modelShader.setVec3 ("point.lv_Position", _light_position);
+		_modelShader.setFloat("point.lf_Constant", 1.0f);
+		_modelShader.setFloat("point.lf_LinearParam", 0.09f);
+		_modelShader.setFloat("point.lf_QuadParam", 0.032f);
+		_modelShader.setFloat("point.lf_Power", 2.0f);
+		_modelShader.setVec3 ("point.lv_CameraPosition", camera.Position);
 
 		_backpack.Draw(_modelShader);
 

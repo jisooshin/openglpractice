@@ -8,18 +8,20 @@ in vec3 FragPos;
 
 struct Material
 {
-	sampler2D diffuse;
-	sampler2D specular;
-	sampler2D bump;
-	float shininess;
+	sampler2D ms_Diffuse;
+	sampler2D ms_Specular;
+	sampler2D ms_Bump;
+	float mf_Shininess;
+	vec3 mv_AmbientCoeff, mv_DiffuseCoeff, mv_SpecularCoeff;
 };
 
 struct PointLight 
 {
-	float constant, linearParam, quadParam, shiness;
-	vec3 ambient, diffuse, sepcular;
-	vec3 position;
-	vec3 cameraPosition;
+	float lf_Constant, lf_LinearParam, lf_QuadParam;
+	float lf_Power;
+	vec3 lv_LightColor;
+	vec3 lv_Position;
+	vec3 lv_CameraPosition;
 };
 
 uniform Material material[3]; // 일단 3개만 선언해놓고 판단
@@ -34,35 +36,33 @@ void main()
 }
 
 
-
-
 vec3 calculate_point_light(PointLight point, Material material, float ambientParam = 0.2)
 {
 	// base 
 	vec3 normal = normalize(Normal);
-	vec3 lightPosition = normalize(point.position);
+	vec3 lightPosition = normalize(point.lv_Position);
 
 	// attenuation
-	float dst = length(point.position - FragPos);
-	float att = 1.0 / (point.constant + (point.linearParam * dst) + (point.quadParam * (dst * dst)));
+	float dst = length(point.lv_Position - FragPos);
+	float att = 1.0 / (point.lf_Constant + (point.lf_LinearParam * dst) + (point.lf_QuadParam * (dst * dst)));
 
 	// ambient
-	vec3 ambient = texture(material.diffuse, TexCoord).rgb * ambientParam;
+	vec3 ambient = texture(material.ms_Diffuse, TexCoord).rgb * ambientParam;
 
 	// diffuse
-	vec3 diffuse = texture(material.diffuse, TexCoord).rgb * max(dot(lightPosition, normal), 0.0);
+	vec3 diffuse = texture(material.ms_Diffuse, TexCoord).rgb * max(dot(lightPosition, normal), 0.0);
 
 	// sepcular
 	vec3 ref = reflect(-lightPosition, normal);
-	vec3 viewDir = (point.cameraPosition - FragPos);
+	vec3 viewDir = (point.lv_CameraPosition - FragPos);
 	viewDir = normalize(viewDir);
 
-	float spec = pow(max(dot(viewDir, ref), 0.0), point.shiness);
-	vec3 specular = texture(material.diffuse, TexCoord).rgb * spec * normalize(texture(material.specular, TexCoord).rgb);
+	float spec = pow(max(dot(viewDir, ref), 0.0), material.mf_Shininess);//material.mShininess);
+	vec3 specular = texture(material.ms_Diffuse, TexCoord).rgb * spec * normalize(texture(material.ms_Specular, TexCoord).rgb);
 
-	ambient  *= att;
-	diffuse  *= att;
-	specular *= att;
+	ambient  *= point.lf_Power * att * material.mv_AmbientCoeff;
+	diffuse  *= point.lf_Power * att * material.mv_DiffuseCoeff;
+	specular *= point.lf_Power * att * material.mv_SpecularCoeff;
 
 	return (ambient + diffuse + specular);
 }

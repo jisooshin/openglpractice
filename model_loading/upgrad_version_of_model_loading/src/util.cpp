@@ -236,30 +236,42 @@ Mesh::Mesh(vector<Vertex> vertices, vector<GLuint> indices, vector<Texture> text
 void Mesh::Draw(Shader &shader)
 {
 	// Draw 함수에서는 이미 만들어진 Texture들을 그리는 것만 관장한다.
-	int diffuseN = 1;
-	int specularN = 1;
 	for (size_t i = 0; i < textures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
 		string number;
-		string name = textures[i].type;
 		string uniformName;
 		string uniformNameParam;
-		if (name == "texture_diffuse")
+		if (textures[i].type == "texture_diffuse")
 		{
-			uniformName = format_stringi("material[%i].diffuse", textures[i].materialIndex);
+			uniformName = format_stringi("material[%i].ms_Diffuse", textures[i].materialIndex);
 		}
-		else if (name == "texture_specular")
+		else if (textures[i].type == "texture_specular")
 		{
-			uniformName = format_stringi("material[%i].specular", textures[i].materialIndex);
+			uniformName = format_stringi("material[%i].ms_Specular;", textures[i].materialIndex);
 		}
-		else if (name == "texture_bump")
+		else if (textures[i].type == "texture_bump")
 		{
-			uniformName = format_stringi("material[%i].bump", textures[i].materialIndex);
+			uniformName = format_stringi("material[%i].ms_Bump", textures[i].materialIndex);
 		}
 
 		shader.setInt(uniformName.c_str(), (int)i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
+
+		shader.setFloat(
+			format_stringi("material[%i].mf_Shininess", textures[i].materialIndex).c_str(),
+			textures[i].shiness);
+
+		shader.setVec3(
+			format_stringi("material[%i].mv_AmbientCoeff", textures[i].materialIndex).c_str(),
+			textures[i].colorP.ambient);
+		shader.setVec3(
+			format_stringi("material[%i].mv_DiffuseCoeff", textures[i].materialIndex).c_str(),
+			textures[i].colorP.diffuse);
+		shader.setVec3(
+			format_stringi("material[%i].mv_SpecularCoeff", textures[i].materialIndex).c_str(),
+			textures[i].colorP.specular);
+
 	}
 	// glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(VAO);
