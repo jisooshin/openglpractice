@@ -58,18 +58,18 @@ int main()
 	Shader _outlineShader("../../shaders/models/outline/ver.glsl", "../../shaders/models/outline/frag.glsl");
 
 	Model _model1("../../data/tiber/Tibbers Hextech.obj");
-	Model _model2("../../data/sleeping_cat/sleeping_cat.obj");
-	Model _model3("../../data/backpack/backpack.obj");
+	// Model _model2("../../data/sleeping_cat/sleeping_cat.obj");
+	// Model _model3("../../data/backpack/backpack.obj");
 
 	Model _lightball("../../data/circle/circle.obj");
 
-	Model modelContaienr[3] = { _model1, _model2, _model3 };
-	float modelParamContainer[3][4] = 
-	{
-		{1.0f, 0.0f, 0.1f, 0.0f},
-		{0.3f, 2.0f, -0.75f, 2.0f},
-		{0.8f, -1.0f, 0.0f, 0.5f}
-	};
+	// Model modelContaienr[3] = { _model1, _model2, _model3 };
+	// float modelParamContainer[3][4] = 
+	// {
+	// 	{1.0f, 0.0f, 0.1f, 0.0f},
+	// 	{0.3f, 2.0f, -0.75f, 2.0f},
+	// 	{0.8f, -1.0f, 0.0f, 0.5f}
+	// };
 
 
 	// - - - - - ↓ ↓ ↓ ↓ - - - - - // 
@@ -122,53 +122,42 @@ int main()
 
 
 		glm::mat4 _light_model(1.0f);
-		glm::vec3 _light_position = glm::vec3(sin(glfwGetTime() * 2.0f) * 3.0f, 0.0f, cos(glfwGetTime() * 2.0f) * 3.0f);
+		glm::vec3 _light_position = glm::vec3(sin(glfwGetTime()) * 3.0f, 0.0f, cos(glfwGetTime()) * 3.0f);
 		_light_model = glm::translate(_light_model, _light_position);
 		_light_model = glm::scale(_light_model, glm::vec3(0.2f));
 
 
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glStencilMask(0xFF);
-		for (int i = 0; i < 3; i++)
-		{
-			glm::mat4 model(1.0f);
-			model = glm::scale(model, glm::vec3(modelParamContainer[i][0]));
-			model = glm::translate(model, glm::vec3(
-				modelParamContainer[i][1],
-				modelParamContainer[i][2],
-				modelParamContainer[i][3]));
+		glm::mat4 model(1.0f);
+		model = glm::scale(model, glm::vec3(1.0f));
+		model = glm::translate(model, glm::vec3(0.0f));
+		_modelShader.use();
+		_modelShader.setMat4("view", cameraView);
+		_modelShader.setMat4("projection", projection);
+		_modelShader.setMat4("model", model);
+		_modelShader.setVec3 ("point.lv_Position", _light_position);
+		_modelShader.setFloat("point.lf_Constant", 1.0f);
+		_modelShader.setFloat("point.lf_LinearParam", 0.09f);
+		_modelShader.setFloat("point.lf_QuadParam", 0.032f);
+		_modelShader.setFloat("point.lf_Power", 2.0f);
+		_modelShader.setVec3 ("point.lv_CameraPosition", camera.Position);
+		_model1.Draw(_modelShader);
 
-			if (i == 1)
-			{
-				model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			}
-			_modelShader.use();
-			_modelShader.setMat4("view", cameraView);
-			_modelShader.setMat4("projection", projection);
-			_modelShader.setMat4("model", model);
-			_modelShader.setVec3 ("point.lv_Position", _light_position);
-			_modelShader.setFloat("point.lf_Constant", 1.0f);
-			_modelShader.setFloat("point.lf_LinearParam", 0.09f);
-			_modelShader.setFloat("point.lf_QuadParam", 0.032f);
-			_modelShader.setFloat("point.lf_Power", 2.0f);
-			_modelShader.setVec3 ("point.lv_CameraPosition", camera.Position);
-			modelContaienr[i].Draw(_modelShader);
-
-			// glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-			// glStencilMask(0x00);
-			// model = glm::scale(model, glm::vec3(1.02f));
-			// _outlineShader.use();
-			// _outlineShader.setMat4("view", cameraView);
-			// _outlineShader.setMat4("projection", projection);
-			// _outlineShader.setMat4("model", model);
-			// _outlineShader.setVec3 ("point.lv_Position", _light_position);
-			// _outlineShader.setFloat("point.lf_Constant", 1.0f);
-			// _outlineShader.setFloat("point.lf_LinearParam", 0.09f);
-			// _outlineShader.setFloat("point.lf_QuadParam", 0.032f);
-			// _outlineShader.setFloat("point.lf_Power", 2.0f);
-			// _outlineShader.setVec3 ("point.lv_CameraPosition", camera.Position);
-			// modelContaienr[i].Draw(_outlineShader);
-		}
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		model = glm::scale(model, glm::vec3(1.1f));
+		_outlineShader.use();
+		_outlineShader.setMat4("view", cameraView);
+		_outlineShader.setMat4("projection", projection);
+		_outlineShader.setMat4("model", model);
+		_outlineShader.setVec3 ("point.lv_Position", _light_position);
+		_outlineShader.setFloat("point.lf_Constant", 1.0f);
+		_outlineShader.setFloat("point.lf_LinearParam", 0.09f);
+		_outlineShader.setFloat("point.lf_QuadParam", 0.032f);
+		_outlineShader.setFloat("point.lf_Power", 2.0f);
+		_outlineShader.setVec3 ("point.lv_CameraPosition", camera.Position);
+		_model1.Draw(_outlineShader);
 
 
 		_lightShader.use();
