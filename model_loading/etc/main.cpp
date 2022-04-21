@@ -66,8 +66,8 @@ int main()
 	Shader _modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
 	Shader _lightShader("../../shaders/lights/ver.glsl", "../../shaders/lights/frag.glsl");
 
-	// Model _backpack("../../data/gun/Handgun_dae.dae");
-	Model _backpack("../../data/sleeping_kitty/cat.dae");
+	Model _backpack("../../data/gun/Handgun_dae.dae");
+	// Model _backpack("../../data/sleeping_kitty/cat.dae");
 	Model _lightball("../../data/circle/circle.obj");
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -93,7 +93,7 @@ int main()
 
 		glm::mat4 _model_view = camera.GetViewMatrix();
 		glm::mat4 _model_model(1.0f);
-		_model_model = glm::scale(_model_model, glm::vec3(0.5));
+		_model_model = glm::scale(_model_model, glm::vec3(0.3));
 		_model_model = glm::translate(_model_model, glm::vec3(0.0f, 0.0f, 0.0f));
 		_model_model = glm::rotate(_model_model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 

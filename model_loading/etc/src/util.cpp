@@ -108,7 +108,7 @@ void Shader::setVec3(const string& name, glm::vec3 v) const
 
 GLuint TextureFromFile(const char *path, const string &directory)
 {
-	stbi_set_flip_vertically_on_load(true);
+	// stbi_set_flip_vertically_on_load(true);
 	string filename = string(path);
 	filename = directory + '/' + filename;
 	GLuint textureID;
