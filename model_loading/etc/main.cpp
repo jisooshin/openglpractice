@@ -39,12 +39,35 @@ int main()
 	}
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+	/*
+	Assimp::Importer importer;
+	const aiScene* scene = importer.ReadFile("../../data/gun/Handgun_dae.dae", aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+	if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) { printf("Load Failed.\n"); }
+
+	cout << scene->mNumMeshes << endl;
+	cout << scene->mMeshes[0]->HasPositions() << endl;
+	cout << scene->mMeshes[0]->mName.C_Str() << endl;
+	cout << scene->mRootNode->mChildren[0]->mName.C_Str() << endl;
+	cout << " =========== " << endl;
+	int i = 0;
+	cout << scene->mRootNode->mChildren[0]->mChildren[i]->mName.C_Str() << endl;
+	auto v = scene->mRootNode->mChildren[0]->mChildren[i]->mTransformation;
+	printf("%f, %f, %f, %f\n", v.a1, v.a2, v.a3, v.a4);
+	printf("%f, %f, %f, %f\n", v.b1, v.b2, v.b3, v.b4);
+	printf("%f, %f, %f, %f\n", v.c1, v.c2, v.c3, v.c4);
+	printf("%f, %f, %f, %f\n", v.d1, v.d2, v.d3, v.d4);
+	glm::mat4 transform = glm::transpose(glm::make_mat4(&v.a1));
+	cout << glm::to_string(transform) << endl;
+	*/
+
+
 	// global
 	glEnable(GL_DEPTH_TEST);
 	Shader _modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
 	Shader _lightShader("../../shaders/lights/ver.glsl", "../../shaders/lights/frag.glsl");
 
-	Model _backpack("../../data/backpack/backpack.dae");
+	// Model _backpack("../../data/gun/Handgun_dae.dae");
+	Model _backpack("../../data/sleeping_kitty/cat.dae");
 	Model _lightball("../../data/circle/circle.obj");
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -70,9 +93,9 @@ int main()
 
 		glm::mat4 _model_view = camera.GetViewMatrix();
 		glm::mat4 _model_model(1.0f);
-		_model_model = glm::translate(_model_model, glm::vec3(0.0f, 0.0f, 0.0f));
-		// _model_model = glm::rotate(_model_model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		_model_model = glm::scale(_model_model, glm::vec3(0.5));
+		_model_model = glm::translate(_model_model, glm::vec3(0.0f, 0.0f, 0.0f));
+		_model_model = glm::rotate(_model_model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 		glm::mat4 _light_model(1.0f);
 		glm::vec3 _light_position = glm::vec3(sin(glfwGetTime()) * 2.0f, 0.0f, cos(glfwGetTime()) * 2.0f);
@@ -105,7 +128,6 @@ int main()
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-
 	glfwTerminate();
 	return 0;
 }

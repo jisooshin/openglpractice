@@ -12,6 +12,7 @@
 #include <cmath>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <GLFW/glfw3.h>
 #include <assimp/Importer.hpp>
@@ -144,6 +145,6 @@ class Model
 		void gettingNecessaryData_from_mesh(aiMesh *mesh, const aiScene *scene);
 		void gettingNecessaryData(aiNode *node, const aiScene *scene);
 		void processNode(aiNode *node, const aiScene *scene);
-		Mesh processMesh(aiMesh *mesh, const aiScene *scene);
+		Mesh processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 transformMat);
 		vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName, size_t materialIndex);
 };

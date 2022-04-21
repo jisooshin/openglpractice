@@ -375,11 +375,11 @@ void Model::gettingNecessaryData(aiNode *node, const aiScene *scene)
 
 void Model::processNode(aiNode *node, const aiScene *scene)
 {
-
+	glm::mat4 transformMat = glm::transpose(glm::make_mat4(&node->mTransformation.a1));
 	for (size_t i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-		meshes.emplace_back(Model::processMesh(mesh, scene));
+		meshes.emplace_back(Model::processMesh(mesh, scene, transformMat));
 	}
 	for (size_t i = 0; i < node->mNumChildren; i++)
 	{
@@ -388,7 +388,7 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 }
 
 
-Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
+Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 transformMat)
 {
 	vector<Vertex> vertices;
 	vector<GLuint> indices;
@@ -418,15 +418,24 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 		vertex.Position.x -= x_offset;
 		vertex.Position.y -= y_offset;
 		vertex.Position.z -= z_offset;
+
+		auto t = transformMat * glm::vec4(vertex.Position, 1.0f);
+		vertex.Position.x = t.x;
+		vertex.Position.y = t.y;
+		vertex.Position.z = t.z;
+
 		vertex.Position.x = vertex.Position.x / (max_size / 2.0);
 		vertex.Position.y = vertex.Position.y / (max_size / 2.0);
 		vertex.Position.z = vertex.Position.z / (max_size / 2.0);
-
 
 		tmpVector3.x = mesh->mNormals[i].x;
 		tmpVector3.y = mesh->mNormals[i].y;
 		tmpVector3.z = mesh->mNormals[i].z;
 		vertex.Normal = tmpVector3;
+		t = transformMat * glm::vec4(vertex.Normal, 1.0f);
+		vertex.Normal.x = t.x;
+		vertex.Normal.y = t.y;
+		vertex.Normal.z = t.z;
 
 		if (mesh->mTextureCoords[0])
 		{
