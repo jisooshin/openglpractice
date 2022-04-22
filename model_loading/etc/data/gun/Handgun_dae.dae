@@ -17,22 +17,33 @@
     <image id="gun_normal" name="gun_normal"><init_from>textures/handgun_N.jpg</init_from></image>
   </library_images>
   <library_effects>
+
+
+
     <effect id="handgun-effect">
       <profile_COMMON>
+        <!--
         <newparam sid="gun_diffuse-surface"><surface type="2D"><init_from>gun_diffuse</init_from></surface></newparam>
         <newparam sid="gun_diffuse-sampler"><sampler2D><source>gun_diffuse-surface</source></sampler2D></newparam>
+        -->
         <technique sid="common">
+          <newparam sid="surface_gun_specular"> <surface> <init_from>gun_specular</init_from> </surface> </newparam>
+          <newparam sid="sampler2D_gun_specular"> <sampler2D> <source>surface_gun_specular</source> </sampler2D> </newparam>
+
+          <newparam sid="surface_gun_diffuse"> <surface> <init_from>gun_diffuse</init_from> </surface> </newparam>
+          <newparam sid="sampler2D_gun_diffuse"> <sampler2D> <source>surface_gun_diffuse</source> </sampler2D> </newparam>
+
           <phong>
             <ambient>  <color sid="ambient">0.2 0.2 0.2 1</color> </ambient>
-            <specular> <color sid="specular">1 1 1 1</color> </specular>
             <emission> <color sid="emission">0 0 0 1</color> </emission>
             <shininess> <float sid="shininess">50</float> </shininess>
             <index_of_refraction> <float sid="index_of_refraction">1</float> </index_of_refraction>
           </phong>
-          <lambert>
-            <diffuse><texture texture="gun_diffuse-sampler" texcoord="UVMap"/></diffuse>
-            <diffuse><color sid="diffuse">0.64 0.64 0.64 1</color></diffuse>
-          </lambert>
+
+          <diffuse><texture texture="sampler2D_gun_diffuse" texcoord="UVMap"/></diffuse>
+          <diffuse><color sid="diffuse">0.64 0.64 0.64 1</color></diffuse>
+          <specular><texture texture="sampler2D_gun_specular" texcoord="UVMap"/></specular>
+          <specular> <color sid="specular">0.8 0.8 0.8 1</color> </specular>
         </technique>
         <extra>
           <technique profile="GOOGLEEARTH">
@@ -43,6 +54,10 @@
       </profile_COMMON>
       <extra><technique profile="MAX3D"><double_sided>1</double_sided></technique></extra>
     </effect>
+
+
+
+
 
     <effect id="Fire_001-effect"> <profile_COMMON> <technique sid="common"> <phong> <emission> <color sid="emission">0 0 0 1</color> </emission> <ambient> <color sid="ambient">0 0 0 1</color> </ambient> <diffuse> <color sid="diffuse">0.64 0.64 0.64 1</color> </diffuse> <specular> <color sid="specular">0.5 0.5 0.5 1</color> </specular> <shininess> <float sid="shininess">50</float> </shininess> <transparent opaque="A_ONE"> <color>1 1 1 0</color> </transparent> <index_of_refraction> <float sid="index_of_refraction">1</float> </index_of_refraction> </phong> </technique> <extra> <technique profile="GOOGLEEARTH"> <double_sided>1</double_sided> </technique> </extra> </profile_COMMON> <extra><technique profile="MAX3D"><double_sided>1</double_sided></technique></extra> </effect>
 
