@@ -31,8 +31,10 @@ vec3 calculate_point_light(PointLight point, Material material);
 
 void main()
 {
+	
 	vec3 result = calculate_point_light(point, material[0]);
 	FragColor = vec4(result, 1.0);
+	// FragColor = vec4(vec3(gl_FragCoord.z), 1.0);
 }
 
 
@@ -57,7 +59,7 @@ vec3 calculate_point_light(PointLight point, Material material)
 	vec3 viewDir = (point.lv_CameraPosition - FragPos);
 	viewDir = normalize(viewDir);
 
-	float spec = pow(max(dot(viewDir, ref), 0.0), material.mf_Shininess);//material.mShininess);
+	float spec = pow(max(dot(viewDir, ref), 0.0), material.mf_Shininess);
 	vec3 specular = texture(material.ms_Diffuse, TexCoord).rgb * spec * normalize(texture(material.ms_Specular, TexCoord).rgb);
 
 	ambient  *= point.lf_Power * att * material.mv_AmbientCoeff;

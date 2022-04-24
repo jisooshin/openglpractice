@@ -500,30 +500,31 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 			texture.type = typeName;
 			texture.path = str.C_Str();
 			texture.materialIndex = materialIndex;
-			cout << typeName << " : " << texture.path << endl;
+			printf("\n<< %s : %s >>\n", typeName.c_str(), texture.path.c_str());
 
 			aiColor4D color;
 			aiGetMaterialColor(mat, AI_MATKEY_COLOR_AMBIENT, &color);
 			texture.colorP.ambient.x = color.r;
 			texture.colorP.ambient.y = color.g;
 			texture.colorP.ambient.z = color.b;
-			printf("ambient (%f, %f, %f)\n", color.r, color.g, color.b);
+			printf("| Ambient coeff (%f, %f, %f) | \n", color.r, color.g, color.b);
 
 			aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &color);
 			texture.colorP.diffuse.x = color.r;
 			texture.colorP.diffuse.y = color.g;
 			texture.colorP.diffuse.z = color.b;
-			printf("diffuse (%f, %f, %f)\n", color.r, color.g, color.b);
+			printf("| Diffuse coeff (%f, %f, %f) | \n", color.r, color.g, color.b);
 
 			aiGetMaterialColor(mat, AI_MATKEY_COLOR_SPECULAR, &color);
 			texture.colorP.specular.x = color.r;
 			texture.colorP.specular.y = color.g;
 			texture.colorP.specular.z = color.b;
-			printf("specular (%f, %f, %f)\n", color.r, color.g, color.b);
+			printf("| Specular coeff (%f, %f, %f) | \n", color.r, color.g, color.b);
 
 			float shine;
 			aiGetMaterialFloat(mat, AI_MATKEY_SHININESS, &shine);
-			texture.shiness = shine / 4.0f;
+			printf("| Shiness %f |\n", shine);
+			texture.shiness = shine;
 
 			textures.push_back(texture);
 			textures_loaded.push_back(texture);
