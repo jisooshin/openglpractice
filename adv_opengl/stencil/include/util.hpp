@@ -24,7 +24,35 @@
 
 
 using namespace std;
+enum lightType { POINT, SPOT, DIRECTIONAL };
+enum Camera_Movement { FORWARD, BACKWARD, LEFT, RIGHT };
 
+struct Light
+{
+	lightType type;
+	float light_power;
+	float att_constant, att_linear, att_quad;
+	glm::vec3 light_color;
+	glm::vec3 light_position;
+
+	Light(
+		lightType type,
+		float light_power,
+		float att_constant,
+		float att_linear,
+		float att_quad, 
+		glm::vec3 light_color = glm::vec3(1.0f),
+		glm::vec3 light_position = glm::vec3(0.0f)
+	) : type(type), light_power(light_power), att_constant(att_constant), att_linear(att_linear), att_quad(att_quad), light_color(light_color), light_position(light_position)
+	{}
+};
+
+struct TransformMatrix
+{
+	glm::mat4 view, projection, model;
+	TransformMatrix(glm::mat4 model, glm::mat4 view, glm::mat4 projection)
+	: model(model), view(view), projection(projection){}
+};
 
 struct Vertex
 {
@@ -80,16 +108,11 @@ class Shader
 		void setFloat(const string &name, float value) const;
 		void setMat4(const string &name, glm::mat4 value) const;
 		void setVec3(const string &name, glm::vec3 v) const;
+		void setLight(const string& name, Light light) const;
+		void setTransformMatrix(const string& name, TransformMatrix matrix) const;
 };
 
 
-enum Camera_Movement
-{
-	FORWARD,
-	BACKWARD,
-	LEFT,
-	RIGHT
-};
 
 // Camera default parameters
 const float YAW = -90.0f;

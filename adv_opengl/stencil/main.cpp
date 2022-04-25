@@ -52,12 +52,12 @@ int main()
 	glEnable(GL_STENCIL_TEST);
 	glDepthFunc(GL_LESS);
 
-	Shader _modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
-	Shader _lightShader("../../shaders/lights/ver.glsl", "../../shaders/lights/frag.glsl");
-	Shader _outline("../../shaders/models/ver.glsl", "../../shaders/outline/frag.glsl");
+	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
 
-	Model _model(path + "/gun/Handgun_dae.dae");
-	Model _lightball(path + "/circle/circle.obj");
+	Shader modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
+	Shader lightShader("../../shaders/lights/ver.glsl", "../../shaders/lights/frag.glsl");
+	Model model(path + "/gun/Handgun_dae.dae");
+	Model lightball(path + "/circle/circle.obj");
 	
 	// --> process plane <-- //
 	float planeVertices[] = {
@@ -80,9 +80,9 @@ int main()
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 3));
 	glBindVertexArray(0);
-	Shader _planeShader("../../shaders/plane/ver.glsl", "../../shaders/plane/frag.glsl");
+	Shader planeShader("../../shaders/plane/ver.glsl", "../../shaders/plane/frag.glsl");
 	GLuint planeTextureId = TextureFromFile("white.jpg", "../../image");
-	_planeShader.setInt("planeTexture", 0);
+	planeShader.setInt("planeTexture", 0);
 	// ---------------------- //
 
 
@@ -120,10 +120,10 @@ int main()
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, planeTextureId);
 		glm::mat4 _plane_model(1.0f);
-		_planeShader.use();
-		_planeShader.setMat4("view", _view);
-		_planeShader.setMat4("projection", projection);
-		_planeShader.setMat4("model", _plane_model);
+		planeShader.use();
+		planeShader.setMat4("view", _view);
+		planeShader.setMat4("projection", projection);
+		planeShader.setMat4("model", _plane_model);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 
@@ -134,17 +134,17 @@ int main()
 		_model_model = glm::rotate(_model_model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		_model_model = glm::scale(_model_model, glm::vec3(0.2f));
 
-		_modelShader.use();
-		_modelShader.setMat4("view", _view);
-		_modelShader.setMat4("projection", projection);
-		_modelShader.setMat4("model", _model_model);
-		_modelShader.setVec3 ("point.lv_Position", _light_position);
-		_modelShader.setFloat("point.lf_Constant", 1.0f);
-		_modelShader.setFloat("point.lf_LinearParam", 0.09f);
-		_modelShader.setFloat("point.lf_QuadParam", 0.032f);
-		_modelShader.setFloat("point.lf_Power", 2.0f);
-		_modelShader.setVec3 ("point.lv_CameraPosition", camera.Position);
-		_model.Draw(_modelShader);
+		modelShader.use();
+		modelShader.setMat4("view", _view);
+		modelShader.setMat4("projection", projection);
+		modelShader.setMat4("model", _model_model);
+		modelShader.setVec3 ("point.lv_Position", _light_position);
+		modelShader.setFloat("point.lf_Constant", 1.0f);
+		modelShader.setFloat("point.lf_LinearParam", 0.09f);
+		modelShader.setFloat("point.lf_QuadParam", 0.032f);
+		modelShader.setFloat("point.lf_Power", 2.0f);
+		modelShader.setVec3 ("point.lv_CameraPosition", camera.Position);
+		model.Draw(modelShader);
 
 		// ----------- //
 		// -- outline -- // 
@@ -164,11 +164,11 @@ int main()
 
 
 		// -- light -- //
-		_lightShader.use();
-		_lightShader.setMat4("view", _view);
-		_lightShader.setMat4("projection", projection);
-		_lightShader.setMat4("model", _light_model);
-		_lightball.Draw(_lightShader);
+		lightShader.use();
+		lightShader.setMat4("view", _view);
+		lightShader.setMat4("projection", projection);
+		lightShader.setMat4("model", _light_model);
+		lightball.Draw(lightShader);
 		// ----------- //
 
 		glfwSwapBuffers(window);
