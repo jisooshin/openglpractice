@@ -46,9 +46,8 @@ int main()
 		printf("Failed to initialize GLAD\n");
 		return -1;
 	}
+	// Globally // 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
 	glDepthFunc(GL_LESS);
@@ -56,9 +55,8 @@ int main()
 	Shader _modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
 	Shader _lightShader("../../shaders/lights/ver.glsl", "../../shaders/lights/frag.glsl");
 	Shader _outline("../../shaders/models/ver.glsl", "../../shaders/outline/frag.glsl");
-	
 
-	Model _model(path + "/sleeping_kitty/cat.dae");
+	Model _model(path + "/gun/Handgun_dae.dae");
 	Model _lightball(path + "/circle/circle.obj");
 	
 	// --> process plane <-- //
@@ -92,14 +90,14 @@ int main()
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
-
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	while(!glfwWindowShouldClose(window))
 	{
 
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glClearStencil(0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -131,12 +129,10 @@ int main()
 
 		// ----------- //
 		// -- model -- // 
-		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		glStencilMask(0xFF);
 		glm::mat4 _model_model(1.0f);
 		_model_model = glm::translate(_model_model, glm::vec3(0.0f, 0.5f, 0.0f));
 		_model_model = glm::rotate(_model_model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		_model_model = glm::scale(_model_model, glm::vec3(1.0f));
+		_model_model = glm::scale(_model_model, glm::vec3(0.2f));
 
 		_modelShader.use();
 		_modelShader.setMat4("view", _view);
@@ -152,24 +148,18 @@ int main()
 
 		// ----------- //
 		// -- outline -- // 
-		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-		glStencilMask(0x00);
-		glm::mat4 _outline_model(1.0f);
-		_outline_model = glm::translate(_outline_model, glm::vec3(0.0f, 0.5f, 0.0f));
-		_outline_model = glm::rotate(_outline_model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		_outline_model = glm::scale(_outline_model, glm::vec3(1.01f));
-
-		_outline.use();
-		_outline.setMat4("view", _view);
-		_outline.setMat4("projection", projection);
-		_outline.setMat4("model", _outline_model);
-		_outline.setVec3 ("point.lv_Position", _light_position);
-		_outline.setFloat("point.lf_Constant", 1.0f);
-		_outline.setFloat("point.lf_LinearParam", 0.09f);
-		_outline.setFloat("point.lf_QuadParam", 0.032f);
-		_outline.setFloat("point.lf_Power", 2.0f);
-		_outline.setVec3 ("point.lv_CameraPosition", camera.Position);
-		_model.Draw(_outline);
+		// glm::mat4 _outline_model(glm::scale(_model_model, glm::vec3(1.08f)));
+		// _outline.use();
+		// _outline.setMat4("view", _view);
+		// _outline.setMat4("projection", projection);
+		// _outline.setMat4("model", _outline_model);
+		// _outline.setVec3 ("point.lv_Position", _light_position);
+		// _outline.setFloat("point.lf_Constant", 1.0f);
+		// _outline.setFloat("point.lf_LinearParam", 0.09f);
+		// _outline.setFloat("point.lf_QuadParam", 0.032f);
+		// _outline.setFloat("point.lf_Power", 2.0f);
+		// _outline.setVec3 ("point.lv_CameraPosition", camera.Position);
+		// _model.Draw(_outline);
 		// ----------- //
 
 
