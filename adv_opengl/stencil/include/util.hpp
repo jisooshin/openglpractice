@@ -30,27 +30,30 @@ enum Camera_Movement { FORWARD, BACKWARD, LEFT, RIGHT };
 struct Light
 {
 	lightType type;
-	float light_power;
+	float power;
 	float att_constant, att_linear, att_quad;
-	glm::vec3 light_color;
-	glm::vec3 light_position;
+	glm::vec3 color;
+	glm::vec3 position;
 
 	Light(
 		lightType type,
-		float light_power,
+		float power,
 		float att_constant,
 		float att_linear,
 		float att_quad, 
-		glm::vec3 light_color = glm::vec3(1.0f),
-		glm::vec3 light_position = glm::vec3(0.0f)
-	) : type(type), light_power(light_power), att_constant(att_constant), att_linear(att_linear), att_quad(att_quad), light_color(light_color), light_position(light_position)
+		glm::vec3 color = glm::vec3(1.0f),
+		glm::vec3 position = glm::vec3(0.0f)
+	) : type(type), power(power), att_constant(att_constant), att_linear(att_linear), att_quad(att_quad), color(color), position(position)
 	{}
 };
 
-struct TransformMatrix
+struct CollectionOfTransformMatrix
 {
 	glm::mat4 view, projection, model;
-	TransformMatrix(glm::mat4 model, glm::mat4 view, glm::mat4 projection)
+	CollectionOfTransformMatrix(
+		glm::mat4 model = glm::mat4(1.0f),
+		glm::mat4 view = glm::mat4(1.0f),
+		glm::mat4 projection = glm::mat4(1.0f))
 	: model(model), view(view), projection(projection){}
 };
 
@@ -109,7 +112,7 @@ class Shader
 		void setMat4(const string &name, glm::mat4 value) const;
 		void setVec3(const string &name, glm::vec3 v) const;
 		void setLight(const string& name, Light light) const;
-		void setTransformMatrix(const string& name, TransformMatrix matrix) const;
+		void setTransformMatrix(const string& name, CollectionOfTransformMatrix matrix) const;
 };
 
 

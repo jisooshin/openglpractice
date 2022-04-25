@@ -10,6 +10,8 @@
 #define WINDOW_WIDTH 1300
 #define WINDOW_HEIGHT 801
 
+typedef CollectionOfTransformMatrix TM;
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -56,8 +58,10 @@ int main()
 
 	Shader modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
 	Shader lightShader("../../shaders/lights/ver.glsl", "../../shaders/lights/frag.glsl");
+
 	Model model(path + "/gun/Handgun_dae.dae");
 	Model lightball(path + "/circle/circle.obj");
+	TM mMatrix, lMatrix;
 	
 	// --> process plane <-- //
 	float planeVertices[] = {
@@ -96,7 +100,6 @@ int main()
 	{
 
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
-		glClearStencil(0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		float currentFrame = glfwGetTime();
@@ -105,23 +108,27 @@ int main()
 
 		processInput(window);
 
+		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection(1.0f);
 		projection = glm::perspective(
 			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-		glm::mat4 _view = camera.GetViewMatrix();
-		glm::mat4 _light_model(1.0f);
-		glm::vec3 _light_position = glm::vec3(sin(glfwGetTime()) * 4.0f, 1.0f, cos(glfwGetTime()) * 4.0f);
-		_light_model = glm::translate(_light_model, _light_position);
-		_light_model = glm::scale(_light_model, glm::vec3(0.2f));
+
+		mMatrix.projection = projection;
+		lMatrix.projection = projection;
+		mMatrix.view = view;
+		lMatrix.view = view;
+
+		// glm::mat4 _light_model(1.0f);
+		light.position = glm::vec3(sin(glfwGetTime()) * 10.0f, 2.0f, cos(glfwGetTime()) * 10.0f);
+		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
 
 		// -- plane -- // 
-		glStencilMask(0x00);
 		glBindVertexArray(VAO);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, planeTextureId);
 		glm::mat4 _plane_model(1.0f);
 		planeShader.use();
-		planeShader.setMat4("view", _view);
+		planeShader.setMat4("view", view);
 		planeShader.setMat4("projection", projection);
 		planeShader.setMat4("model", _plane_model);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -135,10 +142,10 @@ int main()
 		_model_model = glm::scale(_model_model, glm::vec3(0.2f));
 
 		modelShader.use();
-		modelShader.setMat4("view", _view);
-		modelShader.setMat4("projection", projection);
+		modelShader.setMat4("view", mMatrix.view);
+		modelShader.setMat4("projection", mMatrix.projection);
 		modelShader.setMat4("model", _model_model);
-		modelShader.setVec3 ("point.lv_Position", _light_position);
+		modelShader.setVec3 ("point.lv_Position", light.position);
 		modelShader.setFloat("point.lf_Constant", 1.0f);
 		modelShader.setFloat("point.lf_LinearParam", 0.09f);
 		modelShader.setFloat("point.lf_QuadParam", 0.032f);
@@ -150,7 +157,7 @@ int main()
 		// -- outline -- // 
 		// glm::mat4 _outline_model(glm::scale(_model_model, glm::vec3(1.08f)));
 		// _outline.use();
-		// _outline.setMat4("view", _view);
+		// _outline.setMat4("view", view);
 		// _outline.setMat4("projection", projection);
 		// _outline.setMat4("model", _outline_model);
 		// _outline.setVec3 ("point.lv_Position", _light_position);
@@ -165,9 +172,9 @@ int main()
 
 		// -- light -- //
 		lightShader.use();
-		lightShader.setMat4("view", _view);
-		lightShader.setMat4("projection", projection);
-		lightShader.setMat4("model", _light_model);
+		lightShader.setMat4("view", lMatrix.view);
+		lightShader.setMat4("projection", lMatrix.projection);
+		lightShader.setMat4("model", lMatrix.model);
 		lightball.Draw(lightShader);
 		// ----------- //
 
