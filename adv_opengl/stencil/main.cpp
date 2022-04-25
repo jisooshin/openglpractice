@@ -1,4 +1,11 @@
 #include "util.hpp"
+#include <filesystem>
+
+#ifdef DATA_PATH 
+	#define PATH DATA_PATH 
+#else
+	#define PATH "undefined"
+#endif
 
 #define WINDOW_WIDTH 1300
 #define WINDOW_HEIGHT 801
@@ -17,6 +24,8 @@ float lastY = WINDOW_HEIGHT / 2.0f;
 
 int main()
 {
+	string path(PATH);
+
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -39,7 +48,7 @@ int main()
 	}
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	// global
+
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
 	glDepthFunc(GL_LESS);
@@ -47,9 +56,10 @@ int main()
 	Shader _modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
 	Shader _lightShader("../../shaders/lights/ver.glsl", "../../shaders/lights/frag.glsl");
 	Shader _outline("../../shaders/models/ver.glsl", "../../shaders/outline/frag.glsl");
+	
 
-	Model _model("../../data/sleeping_kitty/cat.dae");
-	Model _lightball("../../data/circle/circle.obj");
+	Model _model(path + "/sleeping_kitty/cat.dae");
+	Model _lightball(path + "/circle/circle.obj");
 	
 	// --> process plane <-- //
 	float planeVertices[] = {
