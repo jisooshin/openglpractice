@@ -34,6 +34,7 @@ struct Light
 	float att_constant, att_linear, att_quad;
 	glm::vec3 color;
 	glm::vec3 position;
+	glm::vec3 camera_position;
 
 	Light(
 		lightType type,
@@ -42,8 +43,9 @@ struct Light
 		float att_linear,
 		float att_quad, 
 		glm::vec3 color = glm::vec3(1.0f),
-		glm::vec3 position = glm::vec3(0.0f)
-	) : type(type), power(power), att_constant(att_constant), att_linear(att_linear), att_quad(att_quad), color(color), position(position)
+		glm::vec3 position = glm::vec3(0.0f),
+		glm::vec3 camera_position = glm::vec3(0.0f)
+	) : type(type), power(power), att_constant(att_constant), att_linear(att_linear), att_quad(att_quad), color(color), position(position), camera_position(camera_position)
 	{}
 };
 

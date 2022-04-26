@@ -62,9 +62,9 @@ vec3 calculate_point_light(PointLight point, Material material)
 	float spec = pow(max(dot(viewDir, ref), 0.0), material.mf_Shininess);
 	vec3 specular = texture(material.ms_Diffuse, TexCoord).rgb * spec * normalize(texture(material.ms_Specular, TexCoord).rgb);
 
-	ambient  *= point.lf_Power * att * material.mv_AmbientCoeff;
-	diffuse  *= point.lf_Power * att * material.mv_DiffuseCoeff;
-	specular *= point.lf_Power * att * material.mv_SpecularCoeff;
-
-	return (ambient + diffuse + specular);
+	ambient  *= att * material.mv_AmbientCoeff;
+	diffuse  *= att * material.mv_DiffuseCoeff;
+	specular *= att * material.mv_SpecularCoeff;
+	
+	return (ambient + diffuse + specular) * point.lv_LightColor * point.lf_Power;
 }

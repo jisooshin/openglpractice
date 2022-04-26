@@ -105,6 +105,36 @@ void Shader::setVec3(const string& name, glm::vec3 v) const
 	glUniform3f(glGetUniformLocation(ID, name.c_str()), v[0], v[1], v[2]);
 }
 
+void Shader::setTransformMatrix(const string& name, CollectionOfTransformMatrix matrix) const
+{
+	glUniformMatrix4fv(glGetUniformLocation(ID, (name + ".model").c_str()), 1, GL_FALSE, glm::value_ptr(matrix.model));
+	glUniformMatrix4fv(glGetUniformLocation(ID, (name + ".view").c_str()), 1, GL_FALSE, glm::value_ptr(matrix.view));
+	glUniformMatrix4fv(glGetUniformLocation(ID, (name + ".projection").c_str()), 1, GL_FALSE, glm::value_ptr(matrix.projection));
+}
+
+void Shader::setLight(const string&name, Light light) const
+{
+	if (light.type == lightType::POINT)
+	{
+		glUniform1f(glGetUniformLocation(ID, (name + ".lf_Constant").c_str()), (float)light.att_constant);
+		glUniform1f(glGetUniformLocation(ID, (name + ".lf_LinearParam").c_str()), (float)light.att_linear);
+		glUniform1f(glGetUniformLocation(ID, (name + ".lf_QuadParam").c_str()), (float)light.att_quad);
+		glUniform1f(glGetUniformLocation(ID, (name + ".lf_Power").c_str()), (float)light.power);
+
+		glUniform3f(glGetUniformLocation(ID, (name + ".lv_LightColor").c_str()), light.color[0], light.color[1], light.color[2]);
+		glUniform3f(glGetUniformLocation(ID, (name + ".lv_Position").c_str()), light.position[0], light.position[1], light.position[2]);
+		glUniform3f(glGetUniformLocation(ID, (name + ".lv_CameraPosition").c_str()), light.camera_position[0], light.camera_position[1], light.camera_position[2]);
+	}
+	else if (light.type == lightType::SPOT)
+	{
+
+	}
+	else 
+	{
+
+	}
+}
+
 
 GLuint TextureFromFile(const char *path, const string &directory)
 {
@@ -322,6 +352,7 @@ void Model::Draw(Shader &shader)
 
 void Model::loadModel(string path)
 {
+	cout << " --- START --- " << path << endl;
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(
 		path,
@@ -333,6 +364,7 @@ void Model::loadModel(string path)
 	directory = path.substr(0, path.find_last_of('/')); // 나중에 텍스쳐 불러올때 사용
 	gettingNecessaryData(scene->mRootNode, scene);
 	processNode(scene->mRootNode, scene);
+	cout <<  "--- END --- " << endl;
 }
 
 
@@ -404,7 +436,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 tran
 	double x_offset = (sum_of_vertices.max_x + sum_of_vertices.min_x) / 2.0;
 	double y_offset = (sum_of_vertices.max_y + sum_of_vertices.min_y) / 2.0;
 	double z_offset = (sum_of_vertices.max_z + sum_of_vertices.min_z) / 2.0;
-
 
 	for (size_t i = 0; i < mesh->mNumVertices; i++)
 	{

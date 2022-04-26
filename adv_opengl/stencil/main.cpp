@@ -55,38 +55,26 @@ int main()
 	glDepthFunc(GL_LESS);
 
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
+	light.color = glm::vec3(1.0f);
+	light.power = 3.0f;
 
 	Shader modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
-	Shader lightShader("../../shaders/lights/ver.glsl", "../../shaders/lights/frag.glsl");
+	Shader lightShader("../../shaders/models/ver.glsl", "../../shaders/lights/frag.glsl");
+	Shader floorShader("../../shaders/models/ver.glsl", "../../shaders/plane/frag.glsl");
 
-	Model model(path + "/gun/Handgun_dae.dae");
+	Model model    (path + "/gun/Handgun_dae.dae");
 	Model lightball(path + "/circle/circle.obj");
-	TM mMatrix, lMatrix;
-	
-	// --> process plane <-- //
-	float planeVertices[] = {
-        5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-        -5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
-        -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
-        5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-        -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
-        5.0f, -0.5f, -5.0f,  2.0f, 2.0f								
-    };
-	GLuint VAO, VBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
+	Model floor    (path + "/floor/floor.dae");
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 3));
-	glBindVertexArray(0);
-	Shader planeShader("../../shaders/plane/ver.glsl", "../../shaders/plane/frag.glsl");
-	GLuint planeTextureId = TextureFromFile("white.jpg", "../../image");
-	planeShader.setInt("planeTexture", 0);
+	TM mMatrix, lMatrix, fMatrix;
+	glm::mat4 _model_model(1.0f);
+	mMatrix.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));
+	mMatrix.model = glm::rotate(mMatrix.model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	mMatrix.model = glm::scale(mMatrix.model, glm::vec3(0.2f));
+
+	fMatrix.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
+	fMatrix.model = glm::rotate(fMatrix.model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	fMatrix.model = glm::scale(fMatrix.model, glm::vec3(0.1f));
 	// ---------------------- //
 
 
@@ -107,7 +95,8 @@ int main()
 		lastFrame = currentFrame;
 
 		processInput(window);
-
+		
+		// view matrix and projection matrix
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection(1.0f);
 		projection = glm::perspective(
@@ -115,66 +104,31 @@ int main()
 
 		mMatrix.projection = projection;
 		lMatrix.projection = projection;
+		fMatrix.projection = projection;
 		mMatrix.view = view;
 		lMatrix.view = view;
+		fMatrix.view = view;
 
-		// glm::mat4 _light_model(1.0f);
-		light.position = glm::vec3(sin(glfwGetTime()) * 10.0f, 2.0f, cos(glfwGetTime()) * 10.0f);
+		light.position = glm::vec3(sin(glfwGetTime()) * 10.0f, 3.0f, cos(glfwGetTime()) * 10.0f);
+		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
 
-		// -- plane -- // 
-		glBindVertexArray(VAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, planeTextureId);
-		glm::mat4 _plane_model(1.0f);
-		planeShader.use();
-		planeShader.setMat4("view", view);
-		planeShader.setMat4("projection", projection);
-		planeShader.setMat4("model", _plane_model);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
+		// plane //
+		floorShader.use();
+		floorShader.setTransformMatrix("matrix", fMatrix);
+		floorShader.setLight("point", light);
+		floor.Draw(floorShader);
 
-		// ----------- //
 		// -- model -- // 
-		glm::mat4 _model_model(1.0f);
-		_model_model = glm::translate(_model_model, glm::vec3(0.0f, 0.5f, 0.0f));
-		_model_model = glm::rotate(_model_model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		_model_model = glm::scale(_model_model, glm::vec3(0.2f));
-
 		modelShader.use();
-		modelShader.setMat4("view", mMatrix.view);
-		modelShader.setMat4("projection", mMatrix.projection);
-		modelShader.setMat4("model", _model_model);
-		modelShader.setVec3 ("point.lv_Position", light.position);
-		modelShader.setFloat("point.lf_Constant", 1.0f);
-		modelShader.setFloat("point.lf_LinearParam", 0.09f);
-		modelShader.setFloat("point.lf_QuadParam", 0.032f);
-		modelShader.setFloat("point.lf_Power", 2.0f);
-		modelShader.setVec3 ("point.lv_CameraPosition", camera.Position);
+		modelShader.setTransformMatrix("matrix", mMatrix);
+		modelShader.setLight("point", light);
 		model.Draw(modelShader);
-
-		// ----------- //
-		// -- outline -- // 
-		// glm::mat4 _outline_model(glm::scale(_model_model, glm::vec3(1.08f)));
-		// _outline.use();
-		// _outline.setMat4("view", view);
-		// _outline.setMat4("projection", projection);
-		// _outline.setMat4("model", _outline_model);
-		// _outline.setVec3 ("point.lv_Position", _light_position);
-		// _outline.setFloat("point.lf_Constant", 1.0f);
-		// _outline.setFloat("point.lf_LinearParam", 0.09f);
-		// _outline.setFloat("point.lf_QuadParam", 0.032f);
-		// _outline.setFloat("point.lf_Power", 2.0f);
-		// _outline.setVec3 ("point.lv_CameraPosition", camera.Position);
-		// _model.Draw(_outline);
-		// ----------- //
-
 
 		// -- light -- //
 		lightShader.use();
-		lightShader.setMat4("view", lMatrix.view);
-		lightShader.setMat4("projection", lMatrix.projection);
-		lightShader.setMat4("model", lMatrix.model);
+		lightShader.setTransformMatrix("matrix", lMatrix);
+		lightShader.setVec3("color", light.color);
 		lightball.Draw(lightShader);
 		// ----------- //
 
