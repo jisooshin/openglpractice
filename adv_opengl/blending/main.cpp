@@ -10,6 +10,7 @@
 #define WINDOW_WIDTH 1300
 #define WINDOW_HEIGHT 801
 
+typedef CollectionOfTransformMatrix TM;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -52,23 +53,35 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
 	glDepthFunc(GL_LESS);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
 	light.color = glm::vec3(1.0f);
-	light.power = 3.0f;
+	light.power = 20.0f;
 
 	Shader modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
+	Shader outlineShader("../../shaders/outline/ver.glsl", "../../shaders/outline/frag.glsl");
 	Shader lightShader("../../shaders/models/ver.glsl", "../../shaders/lights/frag.glsl");
 	Shader floorShader("../../shaders/models/ver.glsl", "../../shaders/plane/frag.glsl");
 
 	Model model    (path + "/gun/Handgun_dae.dae");
+	Model outline  (path + "/gun/Handgun_dae.dae");
 	Model lightball(path + "/circle/circle.obj");
 	Model floor    (path + "/floor/floor.dae");
 
-	TM mMatrix, lMatrix, fMatrix;
-	mMatrix.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));
+	TM mMatrix, lMatrix, fMatrix, oMatrix;
+	float scale_factor { 0.2f };
+	glm::mat4 _model_model(1.0f);
+	glm::vec3 model_location = glm::vec3(0.0f, 0.5f, 0.0f);
+
+	mMatrix.model = glm::translate(glm::mat4(1.0f), model_location);
 	mMatrix.model = glm::rotate(mMatrix.model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	mMatrix.model = glm::scale(mMatrix.model, glm::vec3(0.2f));
+	mMatrix.model = glm::scale(mMatrix.model, glm::vec3(scale_factor));
+
+	oMatrix.model = glm::translate(glm::mat4(1.0f), model_location);
+	oMatrix.model = glm::rotate(oMatrix.model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	oMatrix.model = glm::scale(oMatrix.model, glm::vec3(scale_factor));
+
 
 	fMatrix.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
 	fMatrix.model = glm::rotate(fMatrix.model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -84,7 +97,7 @@ int main()
 
 	while(!glfwWindowShouldClose(window))
 	{
-		glfwMakeContextCurrent(window);
+		glClearStencil(0x00);
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -103,32 +116,52 @@ int main()
 		mMatrix.projection = projection;
 		lMatrix.projection = projection;
 		fMatrix.projection = projection;
+		oMatrix.projection = projection;
 		mMatrix.view = view;
 		lMatrix.view = view;
 		fMatrix.view = view;
+		oMatrix.view = view;
 
-		light.position = glm::vec3(sin(glfwGetTime()) * 10.0f, 3.0f, cos(glfwGetTime()) * 10.0f);
+		light.position = glm::vec3(sin(glfwGetTime()) * 20.0f, 5.0f, cos(glfwGetTime()) * 20.0f);
 		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
 
 		// plane //
+		glStencilMask(0x00);
 		floorShader.use();
 		floorShader.setTransformMatrix("matrix", fMatrix);
 		floorShader.setLight("point", light);
 		floor.Draw(floorShader);
 
 		// -- model -- // 
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF);
 		modelShader.use();
 		modelShader.setTransformMatrix("matrix", mMatrix);
 		modelShader.setLight("point", light);
 		model.Draw(modelShader);
 
+		// -- outline -- // 
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		glDisable(GL_DEPTH_TEST);
+		outlineShader.use();
+		outlineShader.setTransformMatrix("matrix", oMatrix);
+		outlineShader.setFloat("outlineScale", 0.2f);
+		outline.Draw(outlineShader);
+
 		// -- light -- //
+		glStencilMask(0x00);
 		lightShader.use();
 		lightShader.setTransformMatrix("matrix", lMatrix);
 		lightShader.setVec3("color", light.color);
 		lightball.Draw(lightShader);
 		// ----------- //
+
+		glStencilMask(0xFF);
+		glStencilFunc(GL_ALWAYS, 0, 0xFF);
+		glEnable(GL_DEPTH_TEST);
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

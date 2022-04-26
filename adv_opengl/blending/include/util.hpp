@@ -22,6 +22,7 @@
 
 
 
+
 using namespace std;
 enum lightType { POINT, SPOT, DIRECTIONAL };
 enum Camera_Movement { FORWARD, BACKWARD, LEFT, RIGHT };
@@ -48,7 +49,7 @@ struct Light
 	{}
 };
 
-typedef struct CollectionOfTransformMatrix
+struct CollectionOfTransformMatrix
 {
 	glm::mat4 view, projection, model;
 	CollectionOfTransformMatrix(
@@ -56,7 +57,7 @@ typedef struct CollectionOfTransformMatrix
 		glm::mat4 view = glm::mat4(1.0f),
 		glm::mat4 projection = glm::mat4(1.0f))
 	: model(model), view(view), projection(projection){}
-} TM;
+};
 
 struct Vertex
 {
