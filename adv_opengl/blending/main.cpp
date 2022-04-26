@@ -10,7 +10,6 @@
 #define WINDOW_WIDTH 1300
 #define WINDOW_HEIGHT 801
 
-typedef CollectionOfTransformMatrix TM;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -67,7 +66,6 @@ int main()
 	Model floor    (path + "/floor/floor.dae");
 
 	TM mMatrix, lMatrix, fMatrix;
-	glm::mat4 _model_model(1.0f);
 	mMatrix.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));
 	mMatrix.model = glm::rotate(mMatrix.model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	mMatrix.model = glm::scale(mMatrix.model, glm::vec3(0.2f));
@@ -86,7 +84,7 @@ int main()
 
 	while(!glfwWindowShouldClose(window))
 	{
-
+		glfwMakeContextCurrent(window);
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
