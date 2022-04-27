@@ -56,7 +56,7 @@ int main()
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
-	light.color = glm::vec3(1.0f);
+	light.color = glm::vec3(0.9f, 0.9f, 1.0f);
 	light.power = 20.0f;
 
 	Shader modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
@@ -97,7 +97,6 @@ int main()
 
 	while(!glfwWindowShouldClose(window))
 	{
-		glClearStencil(0x00);
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -133,6 +132,14 @@ int main()
 		floorShader.setLight("point", light);
 		floor.Draw(floorShader);
 
+		// -- light -- //
+		glStencilMask(0x00);
+		lightShader.use();
+		lightShader.setTransformMatrix("matrix", lMatrix);
+		lightShader.setVec3("color", light.color);
+		lightball.Draw(lightShader);
+		// ----------- //
+
 		// -- model -- // 
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glStencilMask(0xFF);
@@ -147,21 +154,13 @@ int main()
 		glDisable(GL_DEPTH_TEST);
 		outlineShader.use();
 		outlineShader.setTransformMatrix("matrix", oMatrix);
-		outlineShader.setFloat("outlineScale", 0.2f);
+		outlineShader.setFloat("outlineScale", 0.05f);
 		outline.Draw(outlineShader);
-
-		// -- light -- //
-		glStencilMask(0x00);
-		lightShader.use();
-		lightShader.setTransformMatrix("matrix", lMatrix);
-		lightShader.setVec3("color", light.color);
-		lightball.Draw(lightShader);
-		// ----------- //
-
-		glStencilMask(0xFF);
-		glStencilFunc(GL_ALWAYS, 0, 0xFF);
 		glEnable(GL_DEPTH_TEST);
 
+
+		glStencilFunc(GL_ALWAYS, 0, 0xFF);
+		glStencilMask(0xFF);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

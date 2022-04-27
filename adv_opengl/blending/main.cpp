@@ -56,7 +56,7 @@ int main()
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
-	light.color = glm::vec3(0.8f, 0.7f, 1.0f);
+	light.color = glm::vec3(0.9f, 0.9f, 1.0f);
 	light.power = 20.0f;
 
 	Shader modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
@@ -121,7 +121,7 @@ int main()
 		fMatrix.view = view;
 		oMatrix.view = view;
 
-		light.position = glm::vec3(sin(glfwGetTime() * 0.5f) * 20.0f, 5.0f, cos(glfwGetTime() * 0.5f) * 20.0f);
+		light.position = glm::vec3(sin(glfwGetTime()) * 20.0f, 5.0f, cos(glfwGetTime()) * 20.0f);
 		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
 
@@ -154,7 +154,7 @@ int main()
 		glDisable(GL_DEPTH_TEST);
 		outlineShader.use();
 		outlineShader.setTransformMatrix("matrix", oMatrix);
-		outlineShader.setFloat("outlineScale", 0.2f);
+		outlineShader.setFloat("outlineScale", 0.05f);
 		outline.Draw(outlineShader);
 		glEnable(GL_DEPTH_TEST);
 
