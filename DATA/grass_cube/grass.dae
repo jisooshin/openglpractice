@@ -41,14 +41,11 @@
           </sampler2D>
         </newparam>
         <technique sid="common">
-          <phong>
-            <emission> <color sid="emission">0 0 0 1</color> </emission>
-            <diffuse> <texture texture="grass_png-sampler" texcoord="UVMap"/> </diffuse>
-            <diffuse>  <color>1 1 1 1</color> </diffuse>
-            <ambient>  <color>1 1 1 1</color> </ambient>
-            <specular> <color>0 0 0 0</color> </specular>
-            <index_of_refraction> <float sid="ior">1.45</float> </index_of_refraction>
-          </phong>
+          <lambert>
+          <emission> <color sid="emission">0 0 0 1</color> </emission>
+          <diffuse> <texture texture="grass_png-sampler" texcoord="UVMap"/> </diffuse>
+          <index_of_refraction> <float sid="ior">1.45</float> </index_of_refraction>
+          </lambert>
         </technique>
       </profile_COMMON>
     </effect>
