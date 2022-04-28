@@ -76,6 +76,7 @@ struct ColorProperty
 struct Texture
 {
 	GLuint id;	 // Gpu 에 올려놓는 Texture의 id
+	string node_name;
 	string type; // specular 인지 diffuse 인지 등을 저장하는 type
 	string path; // filePath (Texture를 나타내는 이미지 파일이 따로 있는 경우를 나타내기 위함인듯 )
 	size_t materialIndex = 0;
@@ -173,6 +174,6 @@ class Model
 		void gettingNecessaryData_from_mesh(aiMesh *mesh, const aiScene *scene);
 		void gettingNecessaryData(aiNode *node, const aiScene *scene);
 		void processNode(aiNode *node, const aiScene *scene);
-		Mesh processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 transformMat);
+		Mesh processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 transformMat, string nodeName);
 		vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName, size_t materialIndex);
 };

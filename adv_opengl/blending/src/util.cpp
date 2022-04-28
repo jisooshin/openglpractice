@@ -265,9 +265,11 @@ Mesh::Mesh(vector<Vertex> vertices, vector<GLuint> indices, vector<Texture> text
 
 void Mesh::Draw(Shader &shader)
 {
-	// Draw 함수에서는 이미 만들어진 Texture들을 그리는 것만 관장한다.
+	// printf("Indicies: %lu\n", indices.size());
+	// printf("Textures size : %lu\n", textures.size());
 	for (size_t i = 0; i < textures.size(); i++)
 	{
+		// printf("NodeName = [%-30s]   size : %lu \t material index : %lu\n", textures[i].node_name.c_str(), textures.size(), textures[i].materialIndex);
 		glActiveTexture(GL_TEXTURE0 + i);
 		string number;
 		string uniformName;
@@ -303,7 +305,9 @@ void Mesh::Draw(Shader &shader)
 			textures[i].colorP.specular);
 
 	}
-	// glActiveTexture(GL_TEXTURE0);
+	if (textures.size() > 0)
+		glActiveTexture(GL_TEXTURE0 + textures[0].materialIndex);
+
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
@@ -352,7 +356,8 @@ void Model::Draw(Shader &shader)
 
 void Model::loadModel(string path)
 {
-	cout << " --- START --- " << path << endl;
+	cout << " ===== START ====== " << endl;
+	cout << "MODEL : " << path << endl;
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(
 		path,
@@ -364,7 +369,7 @@ void Model::loadModel(string path)
 	directory = path.substr(0, path.find_last_of('/')); // 나중에 텍스쳐 불러올때 사용
 	gettingNecessaryData(scene->mRootNode, scene);
 	processNode(scene->mRootNode, scene);
-	cout <<  "--- END --- " << endl;
+	cout <<  " ====== END ====== " << endl << endl;
 }
 
 
@@ -407,11 +412,12 @@ void Model::gettingNecessaryData(aiNode *node, const aiScene *scene)
 
 void Model::processNode(aiNode *node, const aiScene *scene)
 {
+	cout << "NODE Name : " << node->mName.C_Str() << endl;
 	glm::mat4 transformMat = glm::transpose(glm::make_mat4(&node->mTransformation.a1));
 	for (size_t i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-		meshes.emplace_back(Model::processMesh(mesh, scene, transformMat));
+		meshes.emplace_back(Model::processMesh(mesh, scene, transformMat, node->mName.C_Str()));
 	}
 	for (size_t i = 0; i < node->mNumChildren; i++)
 	{
@@ -420,7 +426,7 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 }
 
 
-Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 transformMat)
+Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 transformMat, string nodeName)
 {
 	vector<Vertex> vertices;
 	vector<GLuint> indices;
@@ -502,6 +508,10 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 tran
 		vector<Texture> bumpMaps = Model::loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_bump", materialIndex);
 		textures.insert(textures.end(), bumpMaps.begin(), bumpMaps.end());
 		materialIndex++;
+	}
+	for (auto& elem: textures)
+	{
+		elem.node_name = nodeName;
 	}
 	return Mesh(vertices, indices, textures);
 }
