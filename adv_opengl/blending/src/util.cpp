@@ -435,9 +435,9 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 tran
 	double bbox_x = sum_of_vertices.max_x - sum_of_vertices.min_x;
 	double bbox_y = sum_of_vertices.max_y - sum_of_vertices.min_y;
 	double bbox_z = sum_of_vertices.max_z - sum_of_vertices.min_z;
-	double max_size = bbox_x < bbox_y ? bbox_x : bbox_y;
-	max_size = max_size < bbox_z ? max_size : bbox_z;
 
+	double max_size = bbox_x > bbox_y ? bbox_x : bbox_y;
+	max_size = max_size > bbox_z ? max_size : bbox_z;
 
 	double x_offset = (sum_of_vertices.max_x + sum_of_vertices.min_x) / 2.0;
 	double y_offset = (sum_of_vertices.max_y + sum_of_vertices.min_y) / 2.0;
@@ -485,6 +485,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 tran
 		{
 			vertex.TexCoord = glm::vec2(0.0f);
 		}
+
 
 		vertices.emplace_back(vertex);
 	}

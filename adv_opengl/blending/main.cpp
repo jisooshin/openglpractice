@@ -69,12 +69,12 @@ int main()
 
 	Model model    (path + "/gun/Handgun_dae.dae");
 	Model mWindow   (path + "/window/window.dae");
-	Model outline  (path + "/gun/Handgun_dae.dae");
+	// Model outline  (path + "/gun/Handgun_dae.dae");
 	Model lightball(path + "/circle/circle.obj");
 	Model floor    (path + "/floor/floor.dae");
 
 	TM mMatrix, lMatrix, fMatrix, oMatrix, wMatrix;
-	float scale_factor { 0.2f };
+	float scale_factor { 1.0f };
 	glm::mat4 _model_model(1.0f);
 	glm::vec3 model_location = glm::vec3(0.0f, 0.5f, 0.0f);
 	float angle = glm::radians(-90.0f);
@@ -93,7 +93,7 @@ int main()
 
 	fMatrix.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
 	fMatrix.model = glm::rotate(fMatrix.model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	fMatrix.model = glm::scale(fMatrix.model, glm::vec3(0.1f));
+	fMatrix.model = glm::scale(fMatrix.model, glm::vec3(1.0f));
 	vector<TM> tmVector = {mMatrix, lMatrix, fMatrix, oMatrix, wMatrix};
 	// ---------------------- //
 
@@ -140,10 +140,10 @@ int main()
 
 		// plane //
 		// glStencilMask(0x00);
-		// floorShader.use();
-		// floorShader.setTransformMatrix("matrix", fMatrix);
-		// floorShader.setLight("point", light);
-		// floor.Draw(floorShader);
+		floorShader.use();
+		floorShader.setTransformMatrix("matrix", fMatrix);
+		floorShader.setLight("point", light);
+		floor.Draw(floorShader);
 
 		// -- light -- //
 		// glStencilMask(0x00);
