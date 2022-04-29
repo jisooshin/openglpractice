@@ -57,12 +57,9 @@ int main()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glFrontFace(GL_CCW);
 
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
-	light.color = glm::vec3(1.0f);
+	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 	light.power = 8.0f;
 
 	Shader modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
@@ -121,10 +118,14 @@ int main()
 		lightShader.setVec3("color", light.color);
 		lightball.Draw(lightShader);
 
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glFrontFace(GL_CCW);
 		modelShader.use();
 		modelShader.setTransformMatrix("matrix", mMatrix);
 		modelShader.setLight("point", light);
 		model.Draw(modelShader);
+		glDisable(GL_CULL_FACE);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
