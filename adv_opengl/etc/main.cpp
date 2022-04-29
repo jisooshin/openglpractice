@@ -57,42 +57,30 @@ int main()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
+
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
 	light.color = glm::vec3(1.0f);
-	light.power = 10.0f;
+	light.power = 8.0f;
 
 	Shader modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
-	Shader outlineShader("../../shaders/outline/ver.glsl", "../../shaders/outline/frag.glsl");
 	Shader lightShader("../../shaders/models/ver.glsl", "../../shaders/lights/frag.glsl");
-	Shader floorShader("../../shaders/models/ver.glsl", "../../shaders/floor/frag.glsl");
 
-	Model model     ("/home/shinjisoo/Downloads/fantasy_town/dae/town.dae");
-	// Model outline  (path + "/gun/Handgun_dae.dae");
+	Model model     (path + "/girl/girl.dae");
 	Model lightball (path + "/circle/circle.obj");
-	Model floor     (path + "/floor/floor.dae");
 
-	TM mMatrix, lMatrix, fMatrix, oMatrix, wMatrix;
-	float scale_factor { 5.0f };
+	TM mMatrix, lMatrix;
+	float scale_factor { 1.0f };
 	glm::mat4 _model_model(1.0f);
 	glm::vec3 model_location = glm::vec3(0.0f, 0.5f, 0.0f);
-	float angle = glm::radians(-90.0f);
+	float angle = glm::radians(-180.0f);
 	glm::vec3 angle_vector = glm::vec3(1.0f, 0.0f, 0.0f);
 
 	mMatrix.model = glm::translate(glm::mat4(1.0f), model_location);
 	mMatrix.model = glm::rotate(mMatrix.model, angle, angle_vector);
 	mMatrix.model = glm::scale(mMatrix.model, glm::vec3(scale_factor));
-
-	oMatrix.model = glm::translate(glm::mat4(1.0f), model_location);
-	oMatrix.model = glm::rotate(oMatrix.model, angle, angle_vector);
-	oMatrix.model = glm::scale(oMatrix.model, glm::vec3(scale_factor));
-
-	wMatrix.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.8f, 2.0f));
-	wMatrix.model = glm::scale(wMatrix.model, glm::vec3(0.5f));
-
-	fMatrix.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
-	fMatrix.model = glm::rotate(fMatrix.model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	fMatrix.model = glm::scale(fMatrix.model, glm::vec3(2.0f));
-	// ---------------------- //
 
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -117,62 +105,26 @@ int main()
 		glm::mat4 projection(1.0f);
 		projection = glm::perspective(
 			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-
 		
 		mMatrix.projection = projection;
 		lMatrix.projection = projection;
-		fMatrix.projection = projection;
-		oMatrix.projection = projection;
-		wMatrix.projection = projection;
 		mMatrix.view = view;
 		lMatrix.view = view;
-		fMatrix.view = view;
-		oMatrix.view = view;
-		wMatrix.view = view;
 
 		// light.position = glm::vec3(sin(glfwGetTime()) * 20.0f, 5.0f, cos(glfwGetTime()) * 20.0f);
-		light.position = glm::vec3(8.0f, 8.0f, 5.0f);
+		light.position = glm::vec3(0.0f, 0.0f, 10.0f);
 		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
 
-		// plane //
-		// glStencilMask(0x00);
-		// floorShader.use();
-		// floorShader.setTransformMatrix("matrix", fMatrix);
-		// floor.Draw(floorShader);
-
-		// -- light -- //
-		// glStencilMask(0x00);
 		lightShader.use();
 		lightShader.setTransformMatrix("matrix", lMatrix);
 		lightShader.setVec3("color", light.color);
 		lightball.Draw(lightShader);
-		// ----------- //
-		
 
-
-		// -- model -- // 
-		// glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		// glStencilMask(0xFF);
 		modelShader.use();
 		modelShader.setTransformMatrix("matrix", mMatrix);
 		modelShader.setLight("point", light);
 		model.Draw(modelShader);
-
-
-		// -- outline -- // 
-		// glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-		// glStencilMask(0x00);
-		// glDisable(GL_DEPTH_TEST);
-		// outlineShader.use();
-		// outlineShader.setTransformMatrix("matrix", oMatrix);
-		// outlineShader.setFloat("outlineScale", 0.1f);
-		// outline.Draw(outlineShader);
-		// glEnable(GL_DEPTH_TEST);
-
-
-		// glStencilFunc(GL_ALWAYS, 0, 0xFF);
-		// glStencilMask(0xFF);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

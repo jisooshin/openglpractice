@@ -67,6 +67,7 @@ vec4 calculate_point_light(PointLight point, Material material)
 	diffuse  *= att * material.mv_DiffuseCoeff;
 	specular *= att * material.mv_SpecularCoeff;
 
+
 	vec4 _out = vec4((ambient + diffuse + specular) * point.lv_LightColor * point.lf_Power, origin.a);
 	return _out;
 }

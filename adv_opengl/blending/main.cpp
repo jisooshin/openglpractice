@@ -166,7 +166,6 @@ int main()
 		windowShader.use();
 		windowShader.setTransformMatrix("matrix", mMatrix);
 		mWindow.Draw(windowShader);
-
 		windowShader.use();
 		windowShader.setTransformMatrix("matrix", wMatrix);
 		mWindow.Draw(windowShader);
