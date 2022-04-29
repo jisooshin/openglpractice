@@ -58,23 +58,21 @@ int main()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
-	light.color = glm::vec3(0.9f, 0.8f, 1.0f);
-	light.power = 20.0f;
+	light.color = glm::vec3(1.0f);
+	light.power = 10.0f;
 
 	Shader modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
-	Shader windowShader("../../shaders/models/ver.glsl", "../../shaders/window/frag.glsl");
 	Shader outlineShader("../../shaders/outline/ver.glsl", "../../shaders/outline/frag.glsl");
 	Shader lightShader("../../shaders/models/ver.glsl", "../../shaders/lights/frag.glsl");
 	Shader floorShader("../../shaders/models/ver.glsl", "../../shaders/floor/frag.glsl");
 
-	Model model     (path + "/gun/Handgun_dae.dae");
-	Model mWindow   (path + "/window/window.dae");
+	Model model     ("/home/shinjisoo/Downloads/fantasy_town/dae/town.dae");
 	// Model outline  (path + "/gun/Handgun_dae.dae");
 	Model lightball (path + "/circle/circle.obj");
 	Model floor     (path + "/floor/floor.dae");
 
 	TM mMatrix, lMatrix, fMatrix, oMatrix, wMatrix;
-	float scale_factor { 0.8f };
+	float scale_factor { 5.0f };
 	glm::mat4 _model_model(1.0f);
 	glm::vec3 model_location = glm::vec3(0.0f, 0.5f, 0.0f);
 	float angle = glm::radians(-90.0f);
@@ -139,9 +137,9 @@ int main()
 
 		// plane //
 		// glStencilMask(0x00);
-		floorShader.use();
-		floorShader.setTransformMatrix("matrix", fMatrix);
-		floor.Draw(floorShader);
+		// floorShader.use();
+		// floorShader.setTransformMatrix("matrix", fMatrix);
+		// floor.Draw(floorShader);
 
 		// -- light -- //
 		// glStencilMask(0x00);
@@ -160,17 +158,6 @@ int main()
 		modelShader.setTransformMatrix("matrix", mMatrix);
 		modelShader.setLight("point", light);
 		model.Draw(modelShader);
-
-		// window //
-		// glStencilMask(0x00);
-		windowShader.use();
-		windowShader.setTransformMatrix("matrix", mMatrix);
-		mWindow.Draw(windowShader);
-
-		windowShader.use();
-		windowShader.setTransformMatrix("matrix", wMatrix);
-		mWindow.Draw(windowShader);
-
 
 
 		// -- outline -- // 
