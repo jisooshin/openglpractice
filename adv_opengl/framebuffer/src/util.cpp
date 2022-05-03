@@ -313,7 +313,6 @@ void Mesh::Draw(Shader &shader)
 	glBindVertexArray(0);
 }
 
-
 void Mesh::setupMesh()
 {
 	glGenVertexArrays(1, &VAO);
