@@ -49,52 +49,69 @@ int main()
 		return -1;
 	}
 
-	GLuint texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	Shader modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
+	Shader lightShader("../../shaders/models/ver.glsl", "../../shaders/lights/frag.glsl");
+	Shader fbShader("../../shaders/framebuffer/ver.glsl", "../../shaders/framebuffer/frag.glsl");
+
+    float screenVerticies[] = { 
+        // positions   // texCoords
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+        1.0f, -1.0f,  1.0f, 0.0f,
+
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        1.0f, -1.0f,  1.0f, 0.0f,
+        1.0f,  1.0f,  1.0f, 1.0f
+    };
+
+	// - - - - - - - - - - - - - - - - - - - - // 
+	GLuint screenVAO, screenVBO;
+	glGenVertexArrays(1, &screenVAO);
+	glGenBuffers(1, &screenVBO);
+	glBindVertexArray(screenVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(screenVerticies), &screenVerticies, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+	glBindVertexArray(0);
+
+
+	GLuint frameBuffer, fColorBuffer, fRenderBuffer;
+	glGenFramebuffers(1, &frameBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+
+	// color 버퍼 붙이기
+	glGenTextures(1, &fColorBuffer);
+	glBindTexture(GL_TEXTURE_2D, fColorBuffer);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fColorBuffer, 0);
 
-	GLuint rbo;
-	glGenRenderbuffers(1, &rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	// render 버퍼 붙이기
+	glGenRenderbuffers(1, &fRenderBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, fRenderBuffer);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, WINDOW_WIDTH, WINDOW_HEIGHT);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-	GLuint FBO;
-	glGenFramebuffers(1, &FBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-	// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-	// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth_texture, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, fRenderBuffer);
 
 	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
-		printf(" victory dance \n");
-
+		printf("FRAMEBUFFER BIND SUCCESSFULLY.\n");
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	// - - - - - - - - - - - - - - - - - - - - // 
 
-	/*
 
 	// Globally // 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	glEnable(GL_DEPTH_TEST);
-	// glEnable(GL_STENCIL_TEST);
-	glDepthFunc(GL_LESS);
-	// glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-
 
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
 	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 	light.power = 8.0f;
 
-	Shader modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
-	Shader lightShader("../../shaders/models/ver.glsl", "../../shaders/lights/frag.glsl");
 
 	Model model     (path + "/girl/girl.dae");
 	Model lightball (path + "/circle/circle.obj");
@@ -117,10 +134,9 @@ int main()
 	glfwSetScrollCallback(window, scroll_callback);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+
 	while(!glfwWindowShouldClose(window))
 	{
-		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -144,6 +160,13 @@ int main()
 		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
 
+		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+
+		glEnable(GL_DEPTH_TEST);
+		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// 잠깐 Lightball은 없애는걸로
 		glFrontFace(GL_CW);
 		lightShader.use();
 		lightShader.setTransformMatrix("matrix", lMatrix);
@@ -156,10 +179,22 @@ int main()
 		modelShader.setLight("point", light);
 		model.Draw(modelShader);
 
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDisable(GL_DEPTH_TEST);
+		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		fbShader.use();
+		fbShader.setInt("screenTexture", 0);
+		glBindVertexArray(screenVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, fColorBuffer);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-	*/
 	glfwTerminate();
 	return 0;
 }
