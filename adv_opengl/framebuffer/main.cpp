@@ -49,9 +49,6 @@ int main()
 		return -1;
 	}
 
-	Shader modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
-	Shader lightShader("../../shaders/models/ver.glsl", "../../shaders/lights/frag.glsl");
-	Shader fbShader("../../shaders/framebuffer/ver.glsl", "../../shaders/framebuffer/frag.glsl");
 
     float screenVerticies[] = { 
         // positions   // texCoords
@@ -105,8 +102,17 @@ int main()
 	// Globally // 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_STENCIL_TEST);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
+
+
+
+	Shader modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
+	Shader outlineShader("../../shaders/outline/ver.glsl", "../../shaders/outline/frag.glsl");
+	Shader lightShader("../../shaders/models/ver.glsl", "../../shaders/lights/frag.glsl");
+	Shader fbShader("../../shaders/framebuffer/ver.glsl", "../../shaders/framebuffer/frag.glsl");
 
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
 	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -114,9 +120,11 @@ int main()
 
 
 	Model model     (path + "/girl/girl.dae");
+	Model outline   (path + "/girl/girl.dae");
 	Model lightball (path + "/circle/circle.obj");
 
-	TM mMatrix, lMatrix;
+	TM mMatrix, lMatrix, oMatrix;
+
 	float scale_factor { 1.0f };
 	glm::mat4 _model_model(1.0f);
 	glm::vec3 model_location = glm::vec3(0.0f, 0.5f, 0.0f);
@@ -127,6 +135,9 @@ int main()
 	mMatrix.model = glm::rotate(mMatrix.model, angle, angle_vector);
 	mMatrix.model = glm::scale(mMatrix.model, glm::vec3(scale_factor));
 
+	oMatrix.model = glm::translate(glm::mat4(1.0f), model_location);
+	oMatrix.model = glm::rotate(oMatrix.model, angle, angle_vector);
+	oMatrix.model = glm::scale(oMatrix.model, glm::vec3(scale_factor));
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -151,8 +162,11 @@ int main()
 			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 		
 		mMatrix.projection = projection;
+		oMatrix.projection = projection;
 		lMatrix.projection = projection;
+
 		mMatrix.view = view;
+		oMatrix.view = view;
 		lMatrix.view = view;
 
 		// light.position = glm::vec3(sin(glfwGetTime()) * 10.0f, 5.0f, cos(glfwGetTime()) * 10.0f);
@@ -164,22 +178,39 @@ int main()
 
 		glEnable(GL_DEPTH_TEST);
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		// 잠깐 Lightball은 없애는걸로
+		glStencilMask(0x00);
 		glFrontFace(GL_CW);
 		lightShader.use();
 		lightShader.setTransformMatrix("matrix", lMatrix);
 		lightShader.setVec3("color", light.color);
 		lightball.Draw(lightShader);
 
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF);
 		glFrontFace(GL_CCW);
 		modelShader.use();
 		modelShader.setTransformMatrix("matrix", mMatrix);
 		modelShader.setLight("point", light);
 		model.Draw(modelShader);
 
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		glDisable(GL_DEPTH_TEST);
+		glFrontFace(GL_CCW);
+		outlineShader.use();
+		outlineShader.setTransformMatrix("matrix", oMatrix);
+		outlineShader.setFloat("outlineScale", 0.01f);
+		outline.Draw(outlineShader);
+
+		glStencilMask(0xFF);
+		glStencilFunc(GL_ALWAYS, 0, 0xFF);
+		glEnable(GL_DEPTH_TEST);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
 		glDisable(GL_DEPTH_TEST);
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
