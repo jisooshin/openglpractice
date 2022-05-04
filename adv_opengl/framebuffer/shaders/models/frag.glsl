@@ -33,7 +33,6 @@ void main()
 {
 	vec4 result = calculate_point_light(point, material[0]);
 	FragColor = result;
-	// FragColor = vec4(vec3(gl_FragCoord.z), 1.0);
 }
 
 
