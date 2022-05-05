@@ -113,6 +113,10 @@ int main()
 	Shader outlineShader("../../shaders/outline/ver.glsl", "../../shaders/outline/frag.glsl");
 	Shader lightShader("../../shaders/models/ver.glsl", "../../shaders/lights/frag.glsl");
 	Shader fbShader("../../shaders/framebuffer/ver.glsl", "../../shaders/framebuffer/frag.glsl");
+	fbShader.use();
+	fbShader.setInt("screenTexture", 0);
+	fbShader.setFloat("width_offset", 1.0f / WINDOW_WIDTH);
+	fbShader.setFloat("height_offset", 1.0f / WINDOW_HEIGHT);
 
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
 	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -202,7 +206,7 @@ int main()
 		glFrontFace(GL_CCW);
 		outlineShader.use();
 		outlineShader.setTransformMatrix("matrix", oMatrix);
-		outlineShader.setFloat("outlineScale", 0.01f);
+		outlineShader.setFloat("outlineScale", 0.003f);
 		outline.Draw(outlineShader);
 
 		glStencilMask(0xFF);
@@ -215,9 +219,8 @@ int main()
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		fbShader.use();
-		fbShader.setInt("screenTexture", 0);
 		glBindVertexArray(screenVAO);
+		fbShader.use();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, fColorBuffer);
 		glDrawArrays(GL_TRIANGLES, 0, 6);

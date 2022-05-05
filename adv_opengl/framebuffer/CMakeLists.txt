@@ -15,10 +15,10 @@ set ( SRC_FILES main.cpp src/util.cpp )
 set( MYAPP "${CMAKE_PROJECT_NAME}_${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}" )
 
 
-add_definitions( -DDATA_PATH="/home/shinjisoo/openglpractice/DATA" )
+add_definitions( -DDATA_PATH="/home/shinjisoo/projects/openglpractice/DATA" )
 
 add_executable( ${MYAPP} ${SRC_FILES} )
-target_link_libraries(${MYAPP} glad glfw3  X11 Xi Xrandr Xcursor rt m pthread dl Xxf86vm Xinerama assimp z )
+target_link_libraries(${MYAPP} glad glfw3  X11 Xi Xrandr Xcursor rt m pthread /usr/local/lib/libassimp.so )# dl Xxf86vm Xinerama assimp z )
 
 find_package( OpenGL REQUIRED )
 add_compile_options( -g -Wall )
