@@ -62,15 +62,15 @@ Shader::Shader(string vShader, string fShader)
 		printf("%s\n", infoLog);
 	}
 
-	ID = glCreateProgram();
-	glAttachShader(ID, vertex);
-	glAttachShader(ID, fragment);
-	glLinkProgram(ID);
+	this->ID = glCreateProgram();
+	glAttachShader(this->ID, vertex);
+	glAttachShader(this->ID, fragment);
+	glLinkProgram(this->ID);
 
-	glGetProgramiv(ID, GL_LINK_STATUS, &success);
+	glGetProgramiv(this->ID, GL_LINK_STATUS, &success);
 	if (!success)
 	{
-		glGetProgramInfoLog(ID, 512, NULL, infoLog);
+		glGetProgramInfoLog(this->ID, 512, NULL, infoLog);
 		printf("ERROR::SHADER::PROGRAM::LINKING_FAILED\n%s\n", infoLog);
 	}
 	glDeleteShader(vertex); glDeleteShader(fragment);
@@ -79,53 +79,53 @@ Shader::Shader(string vShader, string fShader)
 
 void Shader::use()
 {
-	glUseProgram(ID);
+	glUseProgram(this->ID);
 }
 
 void Shader::setBool(const string& name, bool value) const
 {
-	glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
+	glUniform1i(glGetUniformLocation(this->ID, name.c_str()), (int)value);
 }
 
 void Shader::setInt(const string& name, int value) const
 {
-	glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
+	glUniform1i(glGetUniformLocation(this->ID, name.c_str()), (int)value);
 }
 
 void Shader::setFloat(const string& name, float value) const
 {
-	glUniform1f(glGetUniformLocation(ID, name.c_str()), (float)value);
+	glUniform1f(glGetUniformLocation(this->ID, name.c_str()), (float)value);
 }
 
 void Shader::setMat4(const string& name, glm::mat4 value) const
 {
-	glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+	glUniformMatrix4fv(glGetUniformLocation(this->ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 }
 
 void Shader::setVec3(const string& name, glm::vec3 v) const
 {
-	glUniform3f(glGetUniformLocation(ID, name.c_str()), v[0], v[1], v[2]);
+	glUniform3f(glGetUniformLocation(this->ID, name.c_str()), v[0], v[1], v[2]);
 }
 
 void Shader::setTransformMatrix(const string& name, CollectionOfTransformMatrix matrix) const
 {
-	glUniformMatrix4fv(glGetUniformLocation(ID, (name + ".model").c_str()), 1, GL_FALSE, glm::value_ptr(matrix.model));
-	glUniformMatrix4fv(glGetUniformLocation(ID, (name + ".view").c_str()), 1, GL_FALSE, glm::value_ptr(matrix.view));
-	glUniformMatrix4fv(glGetUniformLocation(ID, (name + ".projection").c_str()), 1, GL_FALSE, glm::value_ptr(matrix.projection));
+	glUniformMatrix4fv(glGetUniformLocation(this->ID, (name + ".model").c_str()), 1, GL_FALSE, glm::value_ptr(matrix.model));
+	glUniformMatrix4fv(glGetUniformLocation(this->ID, (name + ".view").c_str()), 1, GL_FALSE, glm::value_ptr(matrix.view));
+	glUniformMatrix4fv(glGetUniformLocation(this->ID, (name + ".projection").c_str()), 1, GL_FALSE, glm::value_ptr(matrix.projection));
 }
 
 void Shader::setLight(const string&name, Light light) const
 {
 	if (light.type == lightType::POINT)
 	{
-		glUniform1f(glGetUniformLocation(ID, (name + ".lf_Constant").c_str()), (float)light.att_constant);
-		glUniform1f(glGetUniformLocation(ID, (name + ".lf_LinearParam").c_str()), (float)light.att_linear);
-		glUniform1f(glGetUniformLocation(ID, (name + ".lf_QuadParam").c_str()), (float)light.att_quad);
-		glUniform1f(glGetUniformLocation(ID, (name + ".lf_Power").c_str()), (float)light.power);
+		glUniform1f(glGetUniformLocation(this->ID, (name + ".lf_Constant").c_str()), (float)light.att_constant);
+		glUniform1f(glGetUniformLocation(this->ID, (name + ".lf_LinearParam").c_str()), (float)light.att_linear);
+		glUniform1f(glGetUniformLocation(this->ID, (name + ".lf_QuadParam").c_str()), (float)light.att_quad);
+		glUniform1f(glGetUniformLocation(this->ID, (name + ".lf_Power").c_str()), (float)light.power);
 
-		glUniform3f(glGetUniformLocation(ID, (name + ".lv_LightColor").c_str()), light.color[0], light.color[1], light.color[2]);
-		glUniform3f(glGetUniformLocation(ID, (name + ".lv_Position").c_str()), light.position[0], light.position[1], light.position[2]);
-		glUniform3f(glGetUniformLocation(ID, (name + ".lv_CameraPosition").c_str()), light.camera_position[0], light.camera_position[1], light.camera_position[2]);
+		glUniform3f(glGetUniformLocation(this->ID, (name + ".lv_LightColor").c_str()), light.color[0], light.color[1], light.color[2]);
+		glUniform3f(glGetUniformLocation(this->ID, (name + ".lv_Position").c_str()), light.position[0], light.position[1], light.position[2]);
+		glUniform3f(glGetUniformLocation(this->ID, (name + ".lv_CameraPosition").c_str()), light.camera_position[0], light.camera_position[1], light.camera_position[2]);
 	}
 	else if (light.type == lightType::SPOT)
 	{
@@ -186,21 +186,21 @@ string format_stringi(string &&fmt, int idx)
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) 
 		: Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 {
-	Position = position;
-	WorldUp = up;
-	Yaw = yaw;
-	Pitch = pitch;
-	Camera::updateCameraVectors();
+	this->Position = position;
+	this->WorldUp = up;
+	this->Yaw = yaw;
+	this->Pitch = pitch;
+	this->updateCameraVectors();
 }
 
 Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch)
 		: Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 {
-	Position = glm::vec3(posX, posY, posZ);
-	WorldUp = glm::vec3(upX, upY, upZ);
-	Yaw = yaw;
-	Pitch = pitch;
-	Camera::updateCameraVectors();
+	this->Position = glm::vec3(posX, posY, posZ);
+	this->WorldUp = glm::vec3(upX, upY, upZ);
+	this->Yaw = yaw;
+	this->Pitch = pitch;
+	this->updateCameraVectors();
 }
 
 glm::mat4 Camera::GetViewMatrix()
@@ -211,58 +211,58 @@ glm::mat4 Camera::GetViewMatrix()
 void Camera::updateCameraVectors()
 {
 	glm::vec3 front;
-	front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-	front.y = sin(glm::radians(Pitch));
-	front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+	front.x = cos(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch));
+	front.y = sin(glm::radians(this->Pitch));
+	front.z = sin(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch));
 
-	Front = glm::normalize(front);
-	Right = glm::normalize(glm::cross(Front, WorldUp));
-	Up = glm::normalize(glm::cross(Right, Front));
+	this->Front = glm::normalize(front);
+	this->Right = glm::normalize(glm::cross(this->Front, this->WorldUp));
+	this->Up = glm::normalize(glm::cross(this->Right, this->Front));
 }
 
 
 void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 {
-	float velocity = MovementSpeed * deltaTime;
+	float velocity = this->MovementSpeed * deltaTime;
 	if (direction == FORWARD)
-		Position += Front * velocity;
+		this->Position += this->Front * velocity;
 	if (direction == BACKWARD)
-		Position -= Front * velocity;
+		this->Position -= this->Front * velocity;
 	if (direction == LEFT)
-		Position -= Right * velocity;
+		this->Position -= this->Right * velocity;
 	if (direction == RIGHT)
-		Position += Right * velocity;
+		this->Position += this->Right * velocity;
 }
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch)
 {
-	xoffset *= MouseSensitivity;
-	yoffset *= MouseSensitivity;
-	Yaw += xoffset;
-	Pitch += yoffset;
+	xoffset *= this->MouseSensitivity;
+	yoffset *= this->MouseSensitivity;
+	this->Yaw += xoffset;
+	this->Pitch += yoffset;
 
 	if (constrainPitch)
 	{
-		if (Pitch > 89.0f)
-			Pitch = 89.0f;
-		if (Pitch < -89.0f)
-			Pitch = -89.0f;
+		if (this->Pitch > 89.0f)
+			this->Pitch = 89.0f;
+		if (this->Pitch < -89.0f)
+			this->Pitch = -89.0f;
 	}
 	Camera::updateCameraVectors();
 }
 void Camera::ProcessMouseScroll(float yoffset)
 {
-	Zoom -= (float)yoffset;
-	if (Zoom < 1.0f)
-		Zoom = 1.0f;
-	if (Zoom > 45.0f)
-		Zoom = 45.0f;
+	this->Zoom -= (float)yoffset;
+	if (this->Zoom < 1.0f)
+		this->Zoom = 1.0f;
+	if (this->Zoom > 45.0f)
+		this->Zoom = 45.0f;
 }
 
 
 Mesh::Mesh(vector<Vertex> vertices, vector<GLuint> indices, vector<Texture> textures)
 		: vertices(vertices), indices(indices), textures(textures)
 {
-	Mesh::setupMesh();
+	this->setupMesh();
 };
 
 void Mesh::Draw(Shader &shader)
@@ -345,12 +345,12 @@ void Mesh::setupMesh()
 
 Model::Model(string path)
 {
-	Model::loadModel(path);
+	this->loadModel(path);
 }
 
 void Model::Draw(Shader &shader)
 {
-	for (auto mesh : meshes)
+	for (auto mesh : this->meshes)
 	{
 		mesh.Draw(shader);
 	}
@@ -370,8 +370,8 @@ void Model::loadModel(string path)
 		cout << "ERROR::ASSIMP::" << importer.GetErrorString() << endl;
 	}
 	directory = path.substr(0, path.find_last_of('/')); // 나중에 텍스쳐 불러올때 사용
-	gettingNecessaryData(scene->mRootNode, scene);
-	processNode(scene->mRootNode, scene);
+	this->gettingNecessaryData(scene->mRootNode, scene);
+	this->processNode(scene->mRootNode, scene);
 	cout <<  " ====== END ====== " << endl << endl;
 }
 
@@ -404,12 +404,12 @@ void Model::gettingNecessaryData(aiNode *node, const aiScene *scene)
 	for (size_t i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-		Model::gettingNecessaryData_from_mesh(mesh, scene);
+		this->gettingNecessaryData_from_mesh(mesh, scene);
 	}
 
 	for (size_t i = 0; i < node->mNumChildren; i++)
 	{
-		gettingNecessaryData(node->mChildren[i], scene);
+		this->gettingNecessaryData(node->mChildren[i], scene);
 	}
 }
 
@@ -420,11 +420,11 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 	for (size_t i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-		meshes.emplace_back(Model::processMesh(mesh, scene, transformMat, node->mName.C_Str()));
+		meshes.emplace_back(this->processMesh(mesh, scene, transformMat, node->mName.C_Str()));
 	}
 	for (size_t i = 0; i < node->mNumChildren; i++)
 	{
-		Model::processNode(node->mChildren[i], scene);
+		this->processNode(node->mChildren[i], scene);
 	}
 }
 
@@ -505,11 +505,11 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 tran
 	if (mesh->mMaterialIndex >= 0)
 	{
 		aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
-		vector<Texture> diffuseMaps = Model::loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", materialIndex);
+		vector<Texture> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", materialIndex);
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-		vector<Texture> specularMaps = Model::loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", materialIndex);
+		vector<Texture> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", materialIndex);
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-		vector<Texture> bumpMaps = Model::loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_bump", materialIndex);
+		vector<Texture> bumpMaps = this->loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_bump", materialIndex);
 		textures.insert(textures.end(), bumpMaps.begin(), bumpMaps.end());
 		materialIndex++;
 	}
@@ -706,5 +706,15 @@ GLuint LoadCubeMap(vector<string> faces)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	return textureID;
+
+}
+
+CubeMap::CubeMap(string dir_path)
+{
+	this->set();
+}
+
+void CubeMap::set()
+{
 
 }

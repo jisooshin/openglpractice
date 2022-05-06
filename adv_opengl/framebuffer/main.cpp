@@ -54,7 +54,7 @@ int main()
 		printf("Failed to initialize GLAD\n");
 		return -1;
 	}
-	
+
 	vector<string> fileVector;
 	for (const auto& file : filesystem::directory_iterator(m_path + "/background/skybox"))
 	{
