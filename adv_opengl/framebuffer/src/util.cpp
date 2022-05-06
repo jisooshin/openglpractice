@@ -656,3 +656,55 @@ void Screen::Draw(Shader& shader)
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
+
+
+GLuint LoadCubeMap(vector<string> faces)
+{
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+	int width, height, nChannels;
+	int _n = 0;
+	for (const auto elem: faces)
+	{
+		unsigned char* data = stbi_load(elem.c_str(), &width, &height, &nChannels, 0);
+		if (data)
+		{
+			GLenum format;
+			if (nChannels == 1) { format = GL_RED;} 
+			else if (nChannels == 3) { format = GL_RGB; }
+			else if (nChannels == 4) { format = GL_RGBA; }
+			else
+			{ 
+				const char* fmt = "[%s - %s] IMAGE TYPE NOT SUPPORTED.";
+				int sz = snprintf(NULL, 0, fmt, __FILE__, __func__);
+				char buf[sz + 1];
+				snprintf(buf, sizeof(buf), fmt, __FILE__, __func__);
+				throw runtime_error(buf); 
+			}
+
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + _n, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+			_n++;
+			stbi_image_free(data);
+		}
+		else
+		{
+			const char* fmt = "[%s - %s] IMAGE FILE NOT SUPPORTED.";
+			int sz = snprintf(NULL, 0, fmt, __FILE__, __func__);
+			char buf[sz + 1];
+			snprintf(buf, sizeof(buf), fmt, __FILE__, __func__);
+			throw runtime_error(buf); 
+		}
+
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	return textureID;
+
+}

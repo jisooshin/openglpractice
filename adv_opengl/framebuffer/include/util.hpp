@@ -101,6 +101,7 @@ struct sumCoord
 // - - - - - - - - - - ↓ ↓ ↓ ↓ ↓ ↓ - - - - - - - - - - // 
 
 GLuint TextureFromFile(const char *path, const string &directory);
+GLuint LoadCubeMap(vector<string> faces);
 string format_stringi(string &&fmt, int idx);
 
 class Shader
@@ -194,4 +195,15 @@ class Screen
 	private:
 		void set();
 		
+};
+
+
+class CubeMap
+{
+	public:
+		CubeMap(string dir_path);
+	private:
+		vector<string> faces;
+		void set();
+
 };

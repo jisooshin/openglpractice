@@ -55,7 +55,17 @@ int main()
 		return -1;
 	}
 	
-	Screen screen((size_t)WINDOW_WIDTH, (size_t)WINDOW_HEIGHT);
+	vector<string> fileVector;
+	for (const auto& file : filesystem::directory_iterator(m_path + "/background/skybox"))
+	{
+		fileVector.emplace_back(file.path().string());
+	}
+	sort(fileVector.begin(), fileVector.end());
+	for (const auto elem: fileVector)
+	{
+		cout << elem << endl;
+	}
+
 	// Globally // 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	glEnable(GL_DEPTH_TEST);
@@ -63,7 +73,6 @@ int main()
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-
 
 
 	Shader fbShader     (s_path + "/screen/main/ver.glsl",     s_path + "/screen/main/frag.glsl"    );
@@ -80,9 +89,10 @@ int main()
 	light.power = 8.0f;
 
 
-	Model model     (m_path + "/girl/girl.dae"    );
-	Model outline   (m_path + "/girl/girl.dae"    );
-	Model lightball (m_path + "/circle/circle.obj");
+	Model model     (m_path + "/models/girl/girl.dae"    );
+	Model outline   (m_path + "/models/girl/girl.dae"    );
+	Model lightball (m_path + "/models/circle/circle.obj");
+
 
 	TM mMatrix, lMatrix, oMatrix;
 
@@ -99,6 +109,8 @@ int main()
 	oMatrix.model = glm::translate(glm::mat4(1.0f), model_location);
 	oMatrix.model = glm::rotate(oMatrix.model, angle, angle_vector);
 	oMatrix.model = glm::scale(oMatrix.model, glm::vec3(scale_factor));
+
+	Screen screen((size_t)WINDOW_WIDTH, (size_t)WINDOW_HEIGHT);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
