@@ -16,6 +16,7 @@ set( MYAPP "${CMAKE_PROJECT_NAME}_${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MIN
 
 
 add_definitions( -DDATA_PATH="/home/shinjisoo/openglpractice/DATA" )
+add_definitions( -DSHADER_PATH="${PROJECT_SOURCE_DIR}/shaders" )
 
 add_executable( ${MYAPP} ${SRC_FILES} )
 target_link_libraries(${MYAPP} glad glfw3  X11 Xi Xrandr Xcursor rt m pthread dl Xxf86vm Xinerama assimp z )

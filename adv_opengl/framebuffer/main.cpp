@@ -6,6 +6,11 @@
 #else
 	#define PATH "undefined"
 #endif
+#ifdef SHADER_PATH 
+	#define SPATH SHADER_PATH 
+#else
+	#define SPATH "undefined"
+#endif
 
 #define WINDOW_WIDTH 1300
 #define WINDOW_HEIGHT 801
@@ -26,7 +31,8 @@ float lastY = WINDOW_HEIGHT / 2.0f;
 
 int main()
 {
-	string path(PATH);
+	string m_path(PATH);
+	string s_path(SPATH);
 
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -60,10 +66,10 @@ int main()
 
 
 
-	Shader modelShader("../../shaders/models/ver.glsl", "../../shaders/models/frag.glsl");
-	Shader outlineShader("../../shaders/outline/ver.glsl", "../../shaders/outline/frag.glsl");
-	Shader lightShader("../../shaders/models/ver.glsl", "../../shaders/lights/frag.glsl");
-	Shader fbShader("../../shaders/framebuffer/ver.glsl", "../../shaders/framebuffer/frag.glsl");
+	Shader fbShader     (s_path + "/screen/main/ver.glsl",     s_path + "/screen/main/frag.glsl"    );
+	Shader modelShader  (s_path + "/models/base/ver.glsl",     s_path + "/models/base/frag.glsl"    );
+	Shader lightShader  (s_path + "/models/base/ver.glsl",     s_path + "/models/lights/frag.glsl"  );
+	Shader outlineShader(s_path + "/effects/outline/ver.glsl", s_path + "/effects/outline/frag.glsl");
 	fbShader.use();
 	fbShader.setInt("screenTexture", 0);
 	fbShader.setFloat("width_offset", 1.0f / WINDOW_WIDTH);
@@ -74,9 +80,9 @@ int main()
 	light.power = 8.0f;
 
 
-	Model model     (path + "/girl/girl.dae");
-	Model outline   (path + "/girl/girl.dae");
-	Model lightball (path + "/circle/circle.obj");
+	Model model     (m_path + "/girl/girl.dae"    );
+	Model outline   (m_path + "/girl/girl.dae"    );
+	Model lightball (m_path + "/circle/circle.obj");
 
 	TM mMatrix, lMatrix, oMatrix;
 

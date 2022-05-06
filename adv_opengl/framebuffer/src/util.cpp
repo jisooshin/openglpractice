@@ -10,8 +10,10 @@
 
 using namespace std;
 
-Shader::Shader(const char* vertexPath, const char* fragPath)
+Shader::Shader(string vShader, string fShader)
 {
+	const char*  vertexPath = vShader.c_str();
+	const char*  fragPath = fShader.c_str();
 	string strVertexSource, strFragSource;
 	ifstream vShaderFile, fShaderFile;
 	vShaderFile.exceptions(ifstream::failbit | ifstream::badbit);

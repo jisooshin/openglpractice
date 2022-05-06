@@ -107,7 +107,7 @@ class Shader
 {
 	public:
 		GLuint ID;
-		Shader(const char *vertexPath, const char *fragPath);
+		Shader(string vShader, string fShader);
 		void use();
 		void setBool(const string &name, bool value) const;
 		void setInt(const string &name, int value) const;
