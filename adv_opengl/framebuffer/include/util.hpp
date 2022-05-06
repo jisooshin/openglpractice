@@ -177,3 +177,21 @@ class Model
 		Mesh processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 transformMat, string nodeName);
 		vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName, size_t materialIndex);
 };
+
+
+class Screen
+{
+	public:
+		Screen(size_t width, size_t height);
+		void Draw(Shader& shader);
+		void bind();
+		void detach();
+
+		size_t width, height;
+		GLuint frame_buffer;
+		GLuint screen_vao, screen_vbo;
+		GLuint color_buffer, render_buffer;
+	private:
+		void set();
+		
+};

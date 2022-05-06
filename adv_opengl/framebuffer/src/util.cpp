@@ -575,3 +575,82 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 	}
 	return textures;
 }
+
+
+Screen::Screen(size_t width, size_t height) : width(width), height(height)
+{
+	set();
+}
+
+void Screen::set()
+{
+
+	float sv[] = {
+		// coord    //texture coord
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		 1.0f,  1.0f,  1.0f, 1.0f };
+
+	glGenVertexArrays(1, &screen_vao);
+	glGenBuffers(1, &screen_vbo);
+
+	glBindVertexArray(screen_vao);
+	glBindBuffer(GL_ARRAY_BUFFER, screen_vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(sv), &sv, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(sizeof(float) * 2));
+	glBindVertexArray(0);
+
+	glGenFramebuffers(1, &frame_buffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer);
+
+	// color
+	glGenTextures(1, &color_buffer);
+	glBindTexture(GL_TEXTURE_2D, color_buffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_buffer, 0);
+
+	// renderbuffer
+	glGenRenderbuffers(1, &render_buffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, render_buffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, render_buffer);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+	{
+		printf("[FRAMEBUFFER] FRAMEBUFFER BIND SUCCESSFULLY.\n");
+	}
+	else
+	{
+		throw runtime_error("[FRAMEBUFFER] FRAMEBUFFER HAS FAILED.");
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
+void Screen::bind()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer);
+}
+
+void Screen::detach()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Screen::Draw(Shader& shader)
+{
+	shader.use();
+	glBindVertexArray(screen_vao);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, color_buffer);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}

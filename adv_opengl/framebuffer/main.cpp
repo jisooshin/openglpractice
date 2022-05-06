@@ -48,57 +48,8 @@ int main()
 		printf("Failed to initialize GLAD\n");
 		return -1;
 	}
-
-
-    float screenVerticies[] = { 
-        // positions   // texCoords
-        -1.0f,  1.0f,  0.0f, 1.0f,
-        -1.0f, -1.0f,  0.0f, 0.0f,
-        1.0f, -1.0f,  1.0f, 0.0f,
-
-        -1.0f,  1.0f,  0.0f, 1.0f,
-        1.0f, -1.0f,  1.0f, 0.0f,
-        1.0f,  1.0f,  1.0f, 1.0f
-    };
-
-	// - - - - - - - - - - - - - - - - - - - - // 
-	GLuint screenVAO, screenVBO;
-	glGenVertexArrays(1, &screenVAO);
-	glGenBuffers(1, &screenVBO);
-	glBindVertexArray(screenVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(screenVerticies), &screenVerticies, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-	glBindVertexArray(0);
-
-
-	GLuint frameBuffer, fColorBuffer, fRenderBuffer;
-	glGenFramebuffers(1, &frameBuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-
-	// color 버퍼 붙이기
-	glGenTextures(1, &fColorBuffer);
-	glBindTexture(GL_TEXTURE_2D, fColorBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fColorBuffer, 0);
-
-	// render 버퍼 붙이기
-	glGenRenderbuffers(1, &fRenderBuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, fRenderBuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, WINDOW_WIDTH, WINDOW_HEIGHT);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, fRenderBuffer);
-
-	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
-		printf("FRAMEBUFFER BIND SUCCESSFULLY.\n");
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	// - - - - - - - - - - - - - - - - - - - - // 
-
-
+	
+	Screen screen((size_t)WINDOW_WIDTH, (size_t)WINDOW_HEIGHT);
 	// Globally // 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	glEnable(GL_DEPTH_TEST);
@@ -178,8 +129,7 @@ int main()
 		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-
+		screen.bind();
 		glEnable(GL_DEPTH_TEST);
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -212,19 +162,14 @@ int main()
 		glStencilMask(0xFF);
 		glStencilFunc(GL_ALWAYS, 0, 0xFF);
 		glEnable(GL_DEPTH_TEST);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		screen.detach();
 
 
 		glDisable(GL_DEPTH_TEST);
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glBindVertexArray(screenVAO);
-		fbShader.use();
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, fColorBuffer);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
+		screen.Draw(fbShader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
