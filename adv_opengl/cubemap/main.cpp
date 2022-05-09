@@ -79,7 +79,7 @@ int main()
 
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
 	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
-	light.power = 8.0f;
+	light.power = 2.0f;
 
 
 	Model model     (m_path + "/models/girl/girl.dae"    );
@@ -140,7 +140,7 @@ int main()
 		lMatrix.view = view;
 
 		// light.position = glm::vec3(sin(glfwGetTime()) * 10.0f, 5.0f, cos(glfwGetTime()) * 10.0f);
-		light.position = glm::vec3(0.0f, 0.0f, 10.0f);
+		light.position = glm::vec3(0.0f, 0.0f, 3.0f);
 		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
 
@@ -150,12 +150,12 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		// 잠깐 Lightball은 없애는걸로
-		glStencilMask(0x00);
-		glFrontFace(GL_CW);
-		lightShader.use();
-		lightShader.setTransformMatrix("matrix", lMatrix);
-		lightShader.setVec3("color", light.color);
-		lightball.Draw(lightShader);
+		// glStencilMask(0x00);
+		// glFrontFace(GL_CW);
+		// lightShader.use();
+		// lightShader.setTransformMatrix("matrix", lMatrix);
+		// lightShader.setVec3("color", light.color);
+		// lightball.Draw(lightShader);
 
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glStencilMask(0xFF);
@@ -171,29 +171,27 @@ int main()
 		glFrontFace(GL_CCW);
 		outlineShader.use();
 		outlineShader.setTransformMatrix("matrix", oMatrix);
-		outlineShader.setFloat("outlineScale", 0.1f);
+		outlineShader.setFloat("outlineScale", 0.01f);
 		outline.Draw(outlineShader);
-
-		glStencilMask(0xFF);
-		glStencilFunc(GL_ALWAYS, 0, 0xFF);
 		glEnable(GL_DEPTH_TEST);
 
 
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF);
 		cubemapShader.use();
 		cubemapShader.setInt("skybox", 0);
 		cubemapShader.setMat4("view", view);
 		cubemapShader.setMat4("projection", projection);
-
 		glDepthFunc(GL_LEQUAL);
-
 		glBindVertexArray(cubemap.vao);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.texture);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glDepthFunc(GL_LESS);
+
+		glStencilFunc(GL_ALWAYS, 0, 0xFF);
+		glStencilMask(0xFF);
 		screen.detach();
-
-
 
 		glDisable(GL_DEPTH_TEST);
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
