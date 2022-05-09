@@ -165,19 +165,7 @@ int main()
 		modelShader.setLight("point", light);
 		model.Draw(modelShader);
 
-		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 		glStencilMask(0x00);
-		glDisable(GL_DEPTH_TEST);
-		glFrontFace(GL_CCW);
-		outlineShader.use();
-		outlineShader.setTransformMatrix("matrix", oMatrix);
-		outlineShader.setFloat("outlineScale", 0.01f);
-		outline.Draw(outlineShader);
-		glEnable(GL_DEPTH_TEST);
-
-
-		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		glStencilMask(0xFF);
 		cubemapShader.use();
 		cubemapShader.setInt("skybox", 0);
 		cubemapShader.setMat4("view", view);
@@ -189,14 +177,28 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glDepthFunc(GL_LESS);
 
-		glStencilFunc(GL_ALWAYS, 0, 0xFF);
-		glStencilMask(0xFF);
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		glDisable(GL_DEPTH_TEST);
+		glFrontFace(GL_CCW);
+		outlineShader.use();
+		outlineShader.setTransformMatrix("matrix", oMatrix);
+		outlineShader.setFloat("outlineScale", 0.01f);
+		outline.Draw(outlineShader);
+		glEnable(GL_DEPTH_TEST);
+
+
+
 		screen.detach();
 
 		glDisable(GL_DEPTH_TEST);
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		screen.Draw(fbShader);
+
+		glStencilFunc(GL_ALWAYS, 0, 0xFF);
+		glStencilMask(0xFF);
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
