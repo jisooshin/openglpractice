@@ -1,4 +1,5 @@
 #pragma once
+#include <filesystem>
 #include <glad/glad.h>
 #include <string>
 #include <iostream>
@@ -189,8 +190,8 @@ class Screen
 		void detach();
 
 		size_t width, height;
-		GLuint frame_buffer;
-		GLuint screen_vao, screen_vbo;
+		GLuint id;
+		GLuint vao, vbo;
 		GLuint color_buffer, render_buffer;
 	private:
 		void set();
@@ -202,8 +203,10 @@ class CubeMap
 {
 	public:
 		CubeMap(string dir_path);
+		GLuint texture;
+		GLuint vao, vbo;
 	private:
 		vector<string> faces;
-		void set();
+		void set(string path);
 
 };

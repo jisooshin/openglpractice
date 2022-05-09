@@ -596,11 +596,11 @@ void Screen::set()
 		 1.0f, -1.0f,  1.0f, 0.0f,
 		 1.0f,  1.0f,  1.0f, 1.0f };
 
-	glGenVertexArrays(1, &screen_vao);
-	glGenBuffers(1, &screen_vbo);
+	glGenVertexArrays(1, &this->vao);
+	glGenBuffers(1, &this->vbo);
 
-	glBindVertexArray(screen_vao);
-	glBindBuffer(GL_ARRAY_BUFFER, screen_vbo);
+	glBindVertexArray(this->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(sv), &sv, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
@@ -608,26 +608,26 @@ void Screen::set()
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(sizeof(float) * 2));
 	glBindVertexArray(0);
 
-	glGenFramebuffers(1, &frame_buffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer);
+	glGenFramebuffers(1, &this->id);
+	glBindFramebuffer(GL_FRAMEBUFFER, this->id);
 
 	// color
-	glGenTextures(1, &color_buffer);
-	glBindTexture(GL_TEXTURE_2D, color_buffer);
+	glGenTextures(1, &this->color_buffer);
+	glBindTexture(GL_TEXTURE_2D, this->color_buffer);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_buffer, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->color_buffer, 0);
 
 	// renderbuffer
-	glGenRenderbuffers(1, &render_buffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, render_buffer);
+	glGenRenderbuffers(1, &this->render_buffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, this->render_buffer);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, render_buffer);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->render_buffer);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
 	{
-		printf("[FRAMEBUFFER] FRAMEBUFFER BIND SUCCESSFULLY.\n");
+		cout << "[" << __PRETTY_FUNCTION__ << "]" << " " << "FRAMEBUFFER BIND SUCCESSFULLY." << endl;
 	}
 	else
 	{
@@ -639,7 +639,7 @@ void Screen::set()
 
 void Screen::bind()
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, this->id);
 }
 
 void Screen::detach()
@@ -650,9 +650,9 @@ void Screen::detach()
 void Screen::Draw(Shader& shader)
 {
 	shader.use();
-	glBindVertexArray(screen_vao);
+	glBindVertexArray(this->vao);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, color_buffer);
+	glBindTexture(GL_TEXTURE_2D, this->color_buffer);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
@@ -677,10 +677,10 @@ GLuint LoadCubeMap(vector<string> faces)
 			else if (nChannels == 4) { format = GL_RGBA; }
 			else
 			{ 
-				const char* fmt = "[%s - %s] IMAGE TYPE NOT SUPPORTED.";
-				int sz = snprintf(NULL, 0, fmt, __FILE__, __func__);
+				const char* fmt = "[%s] IMAGE TYPE NOT SUPPORTED.";
+				int sz = snprintf(NULL, 0, fmt, __PRETTY_FUNCTION__);
 				char buf[sz + 1];
-				snprintf(buf, sizeof(buf), fmt, __FILE__, __func__);
+				snprintf(buf, sizeof(buf), fmt, __PRETTY_FUNCTION__);
 				throw runtime_error(buf); 
 			}
 
@@ -690,10 +690,10 @@ GLuint LoadCubeMap(vector<string> faces)
 		}
 		else
 		{
-			const char* fmt = "[%s - %s] IMAGE FILE NOT SUPPORTED.";
-			int sz = snprintf(NULL, 0, fmt, __FILE__, __func__);
+			const char* fmt = "[%s] IMAGE FILE NOT SUPPORTED.";
+			int sz = snprintf(NULL, 0, fmt, __PRETTY_FUNCTION__);
 			char buf[sz + 1];
-			snprintf(buf, sizeof(buf), fmt, __FILE__, __func__);
+			snprintf(buf, sizeof(buf), fmt, __PRETTY_FUNCTION__);
 			throw runtime_error(buf); 
 		}
 
@@ -711,10 +711,80 @@ GLuint LoadCubeMap(vector<string> faces)
 
 CubeMap::CubeMap(string dir_path)
 {
-	this->set();
+	this->set(dir_path);
 }
 
-void CubeMap::set()
+void CubeMap::set(string path)
 {
+	float skyboxVertices[] = {
+		// positions          
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
 
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f
+	};
+	
+	vector<string> file_vector;
+	for (const auto& file : filesystem::directory_iterator(path))
+	{
+		file_vector.emplace_back(file.path().string());
+	}
+	sort(file_vector.begin(), file_vector.end());
+
+	cout << " ====== Load cube map ======= " << endl;
+	int i = 0;
+	for (const auto& elem: file_vector)
+	{
+		cout << "( " << i << " )" << "[" << __PRETTY_FUNCTION__ << "]" << " " << "ORDER OF CUBE TEXTURE FILES." << elem << endl;
+		i++;
+	}
+
+	// Generate cubemap texture id
+	this->texture = LoadCubeMap(file_vector);
+
+	glGenVertexArrays(1, &this->vao);
+	glGenBuffers(1, &this->vbo);
+	glBindVertexArray(this->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glBindVertexArray(0);
 }

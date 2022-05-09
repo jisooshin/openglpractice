@@ -1,5 +1,4 @@
 #include "util.hpp"
-#include <filesystem>
 
 #ifdef DATA_PATH 
 	#define PATH DATA_PATH 
@@ -55,16 +54,8 @@ int main()
 		return -1;
 	}
 
-	vector<string> fileVector;
-	for (const auto& file : filesystem::directory_iterator(m_path + "/background/skybox"))
-	{
-		fileVector.emplace_back(file.path().string());
-	}
-	sort(fileVector.begin(), fileVector.end());
-	for (const auto elem: fileVector)
-	{
-		cout << elem << endl;
-	}
+	CubeMap cubemap(m_path + "/background/skybox");
+
 
 	// Globally // 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -79,6 +70,8 @@ int main()
 	Shader modelShader  (s_path + "/models/base/ver.glsl",     s_path + "/models/base/frag.glsl"    );
 	Shader lightShader  (s_path + "/models/base/ver.glsl",     s_path + "/models/lights/frag.glsl"  );
 	Shader outlineShader(s_path + "/effects/outline/ver.glsl", s_path + "/effects/outline/frag.glsl");
+	Shader cubemapShader(s_path + "/background/ver.glsl", s_path + "/background/frag.glsl");
+
 	fbShader.use();
 	fbShader.setInt("screenTexture", 0);
 	fbShader.setFloat("width_offset", 1.0f / WINDOW_WIDTH);
@@ -96,19 +89,21 @@ int main()
 
 	TM mMatrix, lMatrix, oMatrix;
 
-	float scale_factor { 1.0f };
+	float scale_factor { 0.3f };
 	glm::mat4 _model_model(1.0f);
-	glm::vec3 model_location = glm::vec3(0.0f, 0.5f, 0.0f);
+	glm::vec3 model_location = glm::vec3(0.0f, 0.1f, 0.0f);
 	float angle = glm::radians(-180.0f);
 	glm::vec3 angle_vector = glm::vec3(1.0f, 0.0f, 0.0f);
 
-	mMatrix.model = glm::translate(glm::mat4(1.0f), model_location);
 	mMatrix.model = glm::rotate(mMatrix.model, angle, angle_vector);
 	mMatrix.model = glm::scale(mMatrix.model, glm::vec3(scale_factor));
+	mMatrix.model = glm::translate(mMatrix.model, model_location);
 
-	oMatrix.model = glm::translate(glm::mat4(1.0f), model_location);
 	oMatrix.model = glm::rotate(oMatrix.model, angle, angle_vector);
 	oMatrix.model = glm::scale(oMatrix.model, glm::vec3(scale_factor));
+	oMatrix.model = glm::translate(oMatrix.model, model_location);
+
+	lMatrix.model = glm::scale(lMatrix.model, glm::vec3(scale_factor * 0.3f));
 
 	Screen screen((size_t)WINDOW_WIDTH, (size_t)WINDOW_HEIGHT);
 
@@ -117,6 +112,8 @@ int main()
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+
 
 
 	while(!glfwWindowShouldClose(window))
@@ -174,21 +171,34 @@ int main()
 		glFrontFace(GL_CCW);
 		outlineShader.use();
 		outlineShader.setTransformMatrix("matrix", oMatrix);
-		outlineShader.setFloat("outlineScale", 0.003f);
+		outlineShader.setFloat("outlineScale", 0.1f);
 		outline.Draw(outlineShader);
 
 		glStencilMask(0xFF);
 		glStencilFunc(GL_ALWAYS, 0, 0xFF);
 		glEnable(GL_DEPTH_TEST);
+
+
+		cubemapShader.use();
+		cubemapShader.setInt("skybox", 0);
+		cubemapShader.setMat4("view", view);
+		cubemapShader.setMat4("projection", projection);
+
+		glDepthFunc(GL_LEQUAL);
+
+		glBindVertexArray(cubemap.vao);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.texture);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthFunc(GL_LESS);
 		screen.detach();
+
 
 
 		glDisable(GL_DEPTH_TEST);
 		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
 		screen.Draw(fbShader);
-
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
