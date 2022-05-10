@@ -79,20 +79,20 @@ int main()
 
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
 	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
-	light.power = 2.0f;
+	light.power = 5.0f;
 
 
-	Model model     (m_path + "/models/girl/girl.dae"    );
-	Model outline   (m_path + "/models/girl/girl.dae"    );
+	Model model     (m_path + "/models/gun/Handgun_dae.dae"    );
+	Model outline   (m_path + "/models/gun/Handgun_dae.dae"    );
 	Model lightball (m_path + "/models/circle/circle.obj");
 
 
 	TM mMatrix, lMatrix, oMatrix;
 
-	float scale_factor { 0.3f };
+	float scale_factor { 1.0f };
 	glm::mat4 _model_model(1.0f);
 	glm::vec3 model_location = glm::vec3(0.0f, 0.1f, 0.0f);
-	float angle = glm::radians(-180.0f);
+	float angle = glm::radians(-90.0f);
 	glm::vec3 angle_vector = glm::vec3(1.0f, 0.0f, 0.0f);
 
 	mMatrix.model = glm::rotate(mMatrix.model, angle, angle_vector);
@@ -104,6 +104,8 @@ int main()
 	oMatrix.model = glm::translate(oMatrix.model, model_location);
 
 	lMatrix.model = glm::scale(lMatrix.model, glm::vec3(scale_factor * 0.3f));
+
+	glm::mat4 cubemap_model = glm::scale(glm::mat4(1.0f), glm::vec3(50.0f));
 
 	Screen screen((size_t)WINDOW_WIDTH, (size_t)WINDOW_HEIGHT);
 
@@ -139,8 +141,8 @@ int main()
 		oMatrix.view = view;
 		lMatrix.view = view;
 
-		// light.position = glm::vec3(sin(glfwGetTime()) * 10.0f, 5.0f, cos(glfwGetTime()) * 10.0f);
-		light.position = glm::vec3(0.0f, 0.0f, 3.0f);
+		light.position = glm::vec3(sin(glfwGetTime()) * 10.0f, 5.0f, cos(glfwGetTime()) * 10.0f);
+		// light.position = glm::vec3(0.0f, 0.0f, 6.0f);
 		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
 
@@ -150,12 +152,12 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		// 잠깐 Lightball은 없애는걸로
-		// glStencilMask(0x00);
-		// glFrontFace(GL_CW);
-		// lightShader.use();
-		// lightShader.setTransformMatrix("matrix", lMatrix);
-		// lightShader.setVec3("color", light.color);
-		// lightball.Draw(lightShader);
+		glStencilMask(0x00);
+		glFrontFace(GL_CW);
+		lightShader.use();
+		lightShader.setTransformMatrix("matrix", lMatrix);
+		lightShader.setVec3("color", light.color);
+		lightball.Draw(lightShader);
 
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glStencilMask(0xFF);
@@ -168,6 +170,7 @@ int main()
 		glStencilMask(0x00);
 		cubemapShader.use();
 		cubemapShader.setInt("skybox", 0);
+		cubemapShader.setMat4("model", cubemap_model);
 		cubemapShader.setMat4("view", view);
 		cubemapShader.setMat4("projection", projection);
 		glDepthFunc(GL_LEQUAL);
