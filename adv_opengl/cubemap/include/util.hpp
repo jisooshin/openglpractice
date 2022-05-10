@@ -203,10 +203,10 @@ class CubeMap
 {
 	public:
 		CubeMap(string dir_path);
+		void Draw(Shader& shader);
+	private:
 		GLuint texture;
 		GLuint vao, vbo;
-	private:
-		vector<string> faces;
 		void set(string path);
 
 };

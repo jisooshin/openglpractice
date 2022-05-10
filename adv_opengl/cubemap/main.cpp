@@ -60,6 +60,7 @@ int main()
 	// Globally // 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 	glEnable(GL_STENCIL_TEST);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	glEnable(GL_CULL_FACE);
@@ -84,7 +85,7 @@ int main()
 
 	Model model     (m_path + "/models/gun/Handgun_dae.dae"    );
 	Model outline   (m_path + "/models/gun/Handgun_dae.dae"    );
-	Model lightball (m_path + "/models/circle/circle.obj");
+	// Model lightball (m_path + "/models/circle/circle.obj");
 
 
 	TM mMatrix, lMatrix, oMatrix;
@@ -103,9 +104,8 @@ int main()
 	oMatrix.model = glm::scale(oMatrix.model, glm::vec3(scale_factor));
 	oMatrix.model = glm::translate(oMatrix.model, model_location);
 
-	lMatrix.model = glm::scale(lMatrix.model, glm::vec3(scale_factor * 0.3f));
+	// lMatrix.model = glm::scale(lMatrix.model, glm::vec3(scale_factor * 0.3f));
 
-	glm::mat4 cubemap_model = glm::scale(glm::mat4(1.0f), glm::vec3(50.0f));
 
 	Screen screen((size_t)WINDOW_WIDTH, (size_t)WINDOW_HEIGHT);
 
@@ -117,13 +117,21 @@ int main()
 
 
 
-
+	int counter { 0 };
 	while(!glfwWindowShouldClose(window))
 	{
 
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		counter++;
+		if (deltaTime >= 1.0 / 30.0)
+		{
+			string fps = to_string((1.0 / deltaTime) * counter);
+			string new_title = "Test - " + fps + " FPS";
+			glfwSetWindowTitle(window, new_title.c_str());
+			lastFrame = currentFrame;
+			counter = 0;
+		}
 
 		processInput(window);
 		
@@ -135,72 +143,69 @@ int main()
 		
 		mMatrix.projection = projection;
 		oMatrix.projection = projection;
-		lMatrix.projection = projection;
+		// lMatrix.projection = projection;
 
 		mMatrix.view = view;
 		oMatrix.view = view;
-		lMatrix.view = view;
+		// lMatrix.view = view;
 
-		light.position = glm::vec3(sin(glfwGetTime()) * 10.0f, 5.0f, cos(glfwGetTime()) * 10.0f);
-		// light.position = glm::vec3(0.0f, 0.0f, 6.0f);
+		// light.position = glm::vec3(sin(glfwGetTime()) * 10.0f, 5.0f, cos(glfwGetTime()) * 10.0f);
+		light.position = glm::vec3(0.0f, 0.0f, 6.0f);
 		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
 
 		screen.bind();
-		glEnable(GL_DEPTH_TEST);
-		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
 		// 잠깐 Lightball은 없애는걸로
-		glStencilMask(0x00);
-		glFrontFace(GL_CW);
-		lightShader.use();
-		lightShader.setTransformMatrix("matrix", lMatrix);
-		lightShader.setVec3("color", light.color);
-		lightball.Draw(lightShader);
+		// glStencilMask(0x00);
+		// glFrontFace(GL_CW);
+		// lightShader.use();
+		// lightShader.setTransformMatrix("matrix", lMatrix);
+		// lightShader.setVec3("color", light.color);
+		// lightball.Draw(lightShader);
+
+		// glStencilMask(0x00);
 
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glStencilMask(0xFF);
-		glFrontFace(GL_CCW);
+		// glFrontFace(GL_CCW);
 		modelShader.use();
 		modelShader.setTransformMatrix("matrix", mMatrix);
 		modelShader.setLight("point", light);
 		model.Draw(modelShader);
 
+
 		glStencilMask(0x00);
+		glDepthFunc(GL_LEQUAL);
 		cubemapShader.use();
 		cubemapShader.setInt("skybox", 0);
-		cubemapShader.setMat4("model", cubemap_model);
-		cubemapShader.setMat4("view", view);
+		cubemapShader.setMat4("view", glm::mat4(glm::mat3(view)));
 		cubemapShader.setMat4("projection", projection);
-		glDepthFunc(GL_LEQUAL);
-		glBindVertexArray(cubemap.vao);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.texture);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		cubemap.Draw(cubemapShader);
 		glDepthFunc(GL_LESS);
+
 
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 		glStencilMask(0x00);
 		glDisable(GL_DEPTH_TEST);
-		glFrontFace(GL_CCW);
+		// glFrontFace(GL_CCW);
 		outlineShader.use();
 		outlineShader.setTransformMatrix("matrix", oMatrix);
 		outlineShader.setFloat("outlineScale", 0.01f);
 		outline.Draw(outlineShader);
 		glEnable(GL_DEPTH_TEST);
-
-
+		glStencilFunc(GL_ALWAYS, 0, 0xFF);
+		glStencilMask(0xFF);
 
 		screen.detach();
 
+
 		glDisable(GL_DEPTH_TEST);
-		glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		screen.Draw(fbShader);
+		glEnable(GL_DEPTH_TEST);
 
-		glStencilFunc(GL_ALWAYS, 0, 0xFF);
-		glStencilMask(0xFF);
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

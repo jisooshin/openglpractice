@@ -695,6 +695,7 @@ GLuint LoadCubeMap(vector<string> faces)
 			char buf[sz + 1];
 			snprintf(buf, sizeof(buf), fmt, __PRETTY_FUNCTION__);
 			throw runtime_error(buf); 
+			stbi_image_free(data);
 		}
 
 	}
@@ -781,10 +782,22 @@ void CubeMap::set(string path)
 
 	glGenVertexArrays(1, &this->vao);
 	glGenBuffers(1, &this->vbo);
+
 	glBindVertexArray(this->vao);
 	glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glBindVertexArray(0);
+}
+
+
+void CubeMap::Draw(Shader& shader)
+{
+	shader.use();
+	glBindVertexArray(this->vao);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, this->texture);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 }
