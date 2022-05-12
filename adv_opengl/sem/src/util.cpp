@@ -359,7 +359,8 @@ void Model::Draw(Shader &shader)
 
 void Model::loadModel(string path)
 {
-	cout << " ===== START ====== " << endl;
+	cout << endl;
+	cout << " ===== MODEL LOADING START ====== " << endl;
 	cout << "MODEL : " << path << endl;
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(
@@ -517,6 +518,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 tran
 	{
 		elem.node_name = nodeName;
 	}
+
+	cout << vertices.size() << " " << indices.size() << endl;
 	return Mesh(vertices, indices, textures);
 }
 vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName, size_t materialIndex)
@@ -552,23 +555,23 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 			texture.colorP.ambient.x = color.r;
 			texture.colorP.ambient.y = color.g;
 			texture.colorP.ambient.z = color.b;
-			printf("| Ambient coeff (%f, %f, %f) | \n", color.r, color.g, color.b);
+			printf(" %-10s (%f, %f, %f)  \n", "AMBIENT", color.r, color.g, color.b);
 
 			aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &color);
 			texture.colorP.diffuse.x = color.r;
 			texture.colorP.diffuse.y = color.g;
 			texture.colorP.diffuse.z = color.b;
-			printf("| Diffuse coeff (%f, %f, %f) | \n", color.r, color.g, color.b);
+			printf(" %-10s (%f, %f, %f) \n", "DIFFUSE", color.r, color.g, color.b);
 
 			aiGetMaterialColor(mat, AI_MATKEY_COLOR_SPECULAR, &color);
 			texture.colorP.specular.x = color.r;
 			texture.colorP.specular.y = color.g;
 			texture.colorP.specular.z = color.b;
-			printf("| Specular coeff (%f, %f, %f) | \n", color.r, color.g, color.b);
+			printf(" %-10s (%f, %f, %f)  \n", "SPECULAR", color.r, color.g, color.b);
 
 			float shine;
 			aiGetMaterialFloat(mat, AI_MATKEY_SHININESS, &shine);
-			printf("| Shiness %f |\n", shine);
+			printf(" %-10s %f \n\n", "SHINESS", shine);
 			texture.shiness = shine;
 
 			textures.push_back(texture);
@@ -801,3 +804,77 @@ void CubeMap::Draw(Shader& shader)
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 }
+
+
+
+SphereMap::SphereMap()
+{
+	this->generate_sphere_vertices();
+}
+
+void SphereMap::generate_sphere_vertices()
+{
+	int stack_count { 20 };
+	int sector_count { 20 };
+
+	float radius { 1.0f };
+	float xy;
+	float x , y , z ;
+	float nx , ny, nz ;
+	float lengthInv { 1.0f / radius };
+	float s, t;
+	float sector_step = 2 * M_PI / sector_count;
+	float stack_step = M_PI / stack_count;
+
+
+	for (int i = 0; i < stack_count; i++)
+	{
+		float stack_angle = M_PI / 2 - i * stack_step;
+		xy = radius * cos(stack_angle);
+		z = radius * sin(stack_angle);
+
+		for (int j = 0; j < sector_count; j++)
+		{
+			float sector_angle = j * sector_step;
+			x = xy * cos(sector_angle);
+			y = xy * sin(sector_angle);
+
+			this->vertices.push_back(x);
+			this->vertices.push_back(y);
+			this->vertices.push_back(z);
+
+			nx = x * lengthInv;
+			ny = y * lengthInv;
+			nz = z * lengthInv;
+			// normal
+			this->normals.push_back(nx);
+			this->normals.push_back(ny);
+			this->normals.push_back(nz);
+
+			//texcoords
+			s = (float)j / sector_count;
+			t = (float)i / stack_count;
+			this->texcoords.push_back(s);
+			this->texcoords.push_back(t);
+		}
+	}
+
+	// 한마디로 400개의 face 위에
+	int k1, k2;
+	for (int i = 0; i < stack_count; i++)
+	{
+		k1 = i * (sector_count + 1);// 0,  21, 42, 63 ...
+		k2 = k1 + sector_count + 1; // 21, 42, 63, 84 ...
+
+		//     k1 은   0 번째 vertex
+		//     k2 는  21 번째 vertex
+		// k1 + 1 은   1 번째 vertex
+		// k2 + 1 은  22 번째 vertex
+
+		for (int j = 0; j < sector_count; j++)
+		{
+
+		}
+	}
+}
+

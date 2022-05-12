@@ -21,6 +21,7 @@ void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
+
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
 float deltaTime  = 0.0f;
 float lastFrame  = 0.0f;
@@ -54,7 +55,6 @@ int main()
 		return -1;
 	}
 
-	CubeMap cubemap(m_path + "/background/skybox");
 
 
 	// Globally // 
@@ -66,7 +66,7 @@ int main()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-
+	/*
 	Shader fbShader     (s_path + "/screen/main/ver.glsl",     s_path + "/screen/main/frag.glsl"    );
 	Shader modelShader  (s_path + "/models/base/ver.glsl",     s_path + "/models/base/frag.glsl"    );
 	Shader lightShader  (s_path + "/models/base/ver.glsl",     s_path + "/models/lights/frag.glsl"  );
@@ -78,13 +78,13 @@ int main()
 	fbShader.setFloat("width_offset", 1.0f / WINDOW_WIDTH);
 	fbShader.setFloat("height_offset", 1.0f / WINDOW_HEIGHT);
 
+
+	CubeMap cubemap (m_path + "/background/skybox");
+	Model model     (m_path + "/models/girl/girl.dae");
+	Model outline   (m_path + "/models/girl/girl.dae");
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
 	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 	light.power = 4.0f;
-
-
-	Model model     (m_path + "/models/girl/girl.dae");
-	Model outline   (m_path + "/models/girl/girl.dae");
 	// Model lightball (m_path + "/models/circle/circle.obj");
 
 
@@ -108,6 +108,11 @@ int main()
 
 
 	Screen screen((size_t)WINDOW_WIDTH, (size_t)WINDOW_HEIGHT);
+	*/
+
+
+
+	Model lightball (m_path + "/models/circle/circle.obj");
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -134,7 +139,7 @@ int main()
 		}
 
 		processInput(window);
-		
+		/*	
 		// view matrix and projection matrix
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection(1.0f);
@@ -143,32 +148,20 @@ int main()
 		
 		mMatrix.projection = projection;
 		oMatrix.projection = projection;
-		// lMatrix.projection = projection;
 
 		mMatrix.view = view;
 		oMatrix.view = view;
-		// lMatrix.view = view;
 
-		// light.position = glm::vec3(sin(glfwGetTime()) * 10.0f, 5.0f, cos(glfwGetTime()) * 10.0f);
 		light.position = glm::vec3(0.0f, 0.0f, 6.0f);
 		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
-
+			
 		screen.bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-		// 잠깐 Lightball은 없애는걸로
-		// glStencilMask(0x00);
-		// glFrontFace(GL_CW);
-		// lightShader.use();
-		// lightShader.setTransformMatrix("matrix", lMatrix);
-		// lightShader.setVec3("color", light.color);
-		// lightball.Draw(lightShader);
 
-		// glStencilMask(0x00);
 
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glStencilMask(0xFF);
-		// glFrontFace(GL_CCW);
 		modelShader.use();
 		modelShader.setTransformMatrix("matrix", mMatrix);
 		modelShader.setLight("point", light);
@@ -188,7 +181,6 @@ int main()
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 		glStencilMask(0x00);
 		glDisable(GL_DEPTH_TEST);
-		// glFrontFace(GL_CCW);
 		outlineShader.use();
 		outlineShader.setTransformMatrix("matrix", oMatrix);
 		outlineShader.setFloat("outlineScale", 0.01f);
@@ -205,7 +197,7 @@ int main()
 		screen.Draw(fbShader);
 		glEnable(GL_DEPTH_TEST);
 
-
+		*/
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

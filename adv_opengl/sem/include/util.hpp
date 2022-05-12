@@ -210,3 +210,17 @@ class CubeMap
 		void set(string path);
 
 };
+
+class SphereMap
+{
+	public:
+		SphereMap();
+	private:
+		vector<float> vertices;
+		vector<float> normals;
+		vector<float> texcoords;
+		vector<int> indicies;
+		void generate_sphere_vertices();
+		
+
+};
