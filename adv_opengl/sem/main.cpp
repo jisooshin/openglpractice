@@ -80,11 +80,11 @@ int main()
 
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
 	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
-	light.power = 5.0f;
+	light.power = 4.0f;
 
 
-	Model model     (m_path + "/models/gun/Handgun_dae.dae"    );
-	Model outline   (m_path + "/models/gun/Handgun_dae.dae"    );
+	Model model     (m_path + "/models/girl/girl.dae");
+	Model outline   (m_path + "/models/girl/girl.dae");
 	// Model lightball (m_path + "/models/circle/circle.obj");
 
 
@@ -93,7 +93,7 @@ int main()
 	float scale_factor { 1.0f };
 	glm::mat4 _model_model(1.0f);
 	glm::vec3 model_location = glm::vec3(0.0f, 0.1f, 0.0f);
-	float angle = glm::radians(-90.0f);
+	float angle = glm::radians(-180.0f);
 	glm::vec3 angle_vector = glm::vec3(1.0f, 0.0f, 0.0f);
 
 	mMatrix.model = glm::rotate(mMatrix.model, angle, angle_vector);
