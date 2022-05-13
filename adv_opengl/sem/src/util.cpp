@@ -841,8 +841,8 @@ vector<Vertex> SphereMap::base_icosahedron()
 		vertices[i1].Position.y = xy * sinf(hAngle1);
 		vertices[i1].Position.z = z;
 
-		vertices[i2].Position.x = xy * cosf(hAngle1);
-		vertices[i2].Position.y = xy * sinf(hAngle1);
+		vertices[i2].Position.x = xy * cosf(hAngle2);
+		vertices[i2].Position.y = xy * sinf(hAngle2);
 		vertices[i2].Position.z = -z;
 
 		hAngle1 += H_ANGLE;

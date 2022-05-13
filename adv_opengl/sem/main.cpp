@@ -169,7 +169,6 @@ int main()
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-		shader.use();
 		TM matrix;
 		matrix.view = camera.GetViewMatrix();
 		glm::mat4 projection(1.0f);
@@ -179,6 +178,8 @@ int main()
 		matrix.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 
 
+		glFrontFace(GL_CCW);
+		shader.use();
 		shader.setTransformMatrix("matrix", matrix);
 		glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, map.base_indices.size(), GL_UNSIGNED_INT, 0);
