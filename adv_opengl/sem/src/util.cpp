@@ -809,72 +809,92 @@ void CubeMap::Draw(Shader& shader)
 
 SphereMap::SphereMap()
 {
-	this->generate_sphere_vertices();
+	this->generate(2);
 }
 
-void SphereMap::generate_sphere_vertices()
+vector<Vertex> SphereMap::base_icosahedron()
 {
-	int stack_count { 20 };
-	int sector_count { 20 };
+	float radius = 1.0f;
+	const float H_ANGLE = 2.0f * M_PI / 5.0f; // radian
+	const float V_ANGLE = atanf(1.0f / 2.0f);
 
-	float radius { 1.0f };
-	float xy;
-	float x , y , z ;
-	float nx , ny, nz ;
-	float lengthInv { 1.0f / radius };
-	float s, t;
-	float sector_step = 2 * M_PI / sector_count;
-	float stack_step = M_PI / stack_count;
+	vector<Vertex> vertices(12);
+	int i1, i2;
+	float z, xy;
+	float hAngle1 = -M_PI / 2.0f - H_ANGLE / 2.0f;
+	float hAngle2 = -M_PI / 2.0f;
 
+	// add top pole
+	vertices[0].Position.x = 0.0f;   // x
+	vertices[0].Position.y = 0.0f;   // y
+	vertices[0].Position.z = radius; // z 
 
-	for (int i = 0; i < stack_count; i++)
+	for (int i = 1; i <= 5; i++)
 	{
-		float stack_angle = M_PI / 2 - i * stack_step;
-		xy = radius * cos(stack_angle);
-		z = radius * sin(stack_angle);
+		i1 = i;       // upper row 
+		i2 = (i + 5); // lower row
 
-		for (int j = 0; j < sector_count; j++)
-		{
-			float sector_angle = j * sector_step;
-			x = xy * cos(sector_angle);
-			y = xy * sin(sector_angle);
+		z = radius * sinf(V_ANGLE);
+		xy = radius * cosf(V_ANGLE);
 
-			this->vertices.push_back(x);
-			this->vertices.push_back(y);
-			this->vertices.push_back(z);
+		vertices[i1].Position.x = xy * cosf(hAngle1);
+		vertices[i1].Position.y = xy * sinf(hAngle1);
+		vertices[i1].Position.z = z;
 
-			nx = x * lengthInv;
-			ny = y * lengthInv;
-			nz = z * lengthInv;
-			// normal
-			this->normals.push_back(nx);
-			this->normals.push_back(ny);
-			this->normals.push_back(nz);
+		vertices[i2].Position.x = xy * cosf(hAngle1);
+		vertices[i2].Position.y = xy * sinf(hAngle1);
+		vertices[i2].Position.z = -z;
 
-			//texcoords
-			s = (float)j / sector_count;
-			t = (float)i / stack_count;
-			this->texcoords.push_back(s);
-			this->texcoords.push_back(t);
-		}
+		hAngle1 += H_ANGLE;
+		hAngle2 += H_ANGLE;
 	}
 
-	// 한마디로 400개의 face 위에
-	int k1, k2;
-	for (int i = 0; i < stack_count; i++)
-	{
-		k1 = i * (sector_count + 1);// 0,  21, 42, 63 ...
-		k2 = k1 + sector_count + 1; // 21, 42, 63, 84 ...
+	// add botom pole
+	vertices[11].Position.x = 0.0f;
+	vertices[11].Position.y = 0.0f;
+	vertices[11].Position.z = -radius;
 
-		//     k1 은   0 번째 vertex
-		//     k2 는  21 번째 vertex
-		// k1 + 1 은   1 번째 vertex
-		// k2 + 1 은  22 번째 vertex
+	this->base_indices = {
+		0, 1, 2,
+		0, 2, 3,
+		0, 3, 4,
+		0, 4, 5,
+		0, 5, 1,
 
-		for (int j = 0; j < sector_count; j++)
-		{
+		1, 6, 7,
+		2, 7, 8,
+		3, 8, 9,
+		4, 9, 10,
+		5, 10, 6,
 
-		}
-	}
+		6, 1, 5,
+		7, 2, 1,
+		8, 3, 2,
+		9, 4, 3, 
+		10, 5, 4,
+
+		11, 6, 10,
+		11, 7, 6,
+		11, 8, 7,
+		11, 9, 8,
+		11, 10, 9
+	};
+
+	this->vertices = vertices;
+	return vertices;
 }
 
+
+void SphereMap::generate(int subdivision)
+{
+	vector<Vertex> base = this->base_icosahedron();
+
+	vector<float> tmpVertices;
+	vector<float> tmpIndices;
+	float *v1, *v2, *v3;
+	float newV1[3], newV2[3], newV3[3];
+	int index;
+
+
+
+}

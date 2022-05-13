@@ -62,9 +62,9 @@ struct CollectionOfTransformMatrix
 
 struct Vertex
 {
-	glm::vec3 Position; // vertex 좌표
-	glm::vec3 Normal;	// vertex 법선벡터
-	glm::vec2 TexCoord; // (만약 있다면) 해당 vertex가 Texture 이미지의 어느 좌표에 속하는지에 대한 좌표
+	glm::vec3 Position = glm::vec3(0.0f); // vertex 좌표
+	glm::vec3 Normal = glm::vec3(0.0f);	// vertex 법선벡터
+	glm::vec2 TexCoord = glm::vec3(0.0f); // (만약 있다면) 해당 vertex가 Texture 이미지의 어느 좌표에 속하는지에 대한 좌표
 };
 
 struct ColorProperty
@@ -215,12 +215,11 @@ class SphereMap
 {
 	public:
 		SphereMap();
+		vector<Vertex> vertices;
+		vector<GLuint> base_indices;
 	private:
-		vector<float> vertices;
-		vector<float> normals;
-		vector<float> texcoords;
-		vector<int> indicies;
-		void generate_sphere_vertices();
-		
+		vector<GLuint> indices;
+		vector<Vertex> base_icosahedron();
+		void generate(int subdivision);
 
 };

@@ -22,7 +22,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 
-Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 1.0f));
 float deltaTime  = 0.0f;
 float lastFrame  = 0.0f;
 bool  firstMouse = true;
@@ -118,7 +118,34 @@ int main()
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	SphereMap map;
+	GLuint vao, vbo, ebo;
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1, &vbo);
+	glGenBuffers(1, &ebo);
+
+	glBindVertexArray(vao);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, map.vertices.size() * sizeof(Vertex), map.vertices.data(), GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, map.base_indices.size() * sizeof(GLuint), map.base_indices.data(), GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+	glBindVertexArray(0);
+
+	Shader shader (s_path + "/models/icosahedron/ver.glsl",     s_path + "/models/icosahedron/frag.glsl");
+
+
+
+
+
+
+
 
 
 
@@ -139,6 +166,24 @@ int main()
 		}
 
 		processInput(window);
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+		shader.use();
+		TM matrix;
+		matrix.view = camera.GetViewMatrix();
+		glm::mat4 projection(1.0f);
+		projection = glm::perspective(
+			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+		matrix.projection = projection;
+		matrix.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+
+
+		shader.setTransformMatrix("matrix", matrix);
+		glBindVertexArray(vao);
+		glDrawElements(GL_TRIANGLES, map.base_indices.size(), GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
 		/*	
 		// view matrix and projection matrix
 		glm::mat4 view = camera.GetViewMatrix();
