@@ -215,11 +215,11 @@ class SphereMap
 {
 	public:
 		SphereMap();
-		vector<Vertex> vertices;
+		vector<Vertex> base_vertices;
 		vector<GLuint> base_indices;
 	private:
 		vector<GLuint> indices;
-		vector<Vertex> base_icosahedron();
+		vector<Vertex> vertices;
+		void build_base_icosahedron();
 		void generate(int subdivision);
-
 };

@@ -809,20 +809,21 @@ void CubeMap::Draw(Shader& shader)
 
 SphereMap::SphereMap()
 {
-	this->generate(2);
+	this->build_base_icosahedron();
+	// this->generate(2);
 }
 
-vector<Vertex> SphereMap::base_icosahedron()
+void SphereMap::build_base_icosahedron()
 {
 	float radius = 1.0f;
-	const float H_ANGLE = 2.0f * M_PI / 5.0f; // radian
+	const float H_ANGLE = 2.0f * M_PI / 5.0f; // radian, 72도 (360 / 5)
 	const float V_ANGLE = atanf(1.0f / 2.0f);
 
 	vector<Vertex> vertices(12);
 	int i1, i2;
 	float z, xy;
-	float hAngle1 = -M_PI / 2.0f - H_ANGLE / 2.0f;
-	float hAngle2 = -M_PI / 2.0f;
+	float hAngle1 = -M_PI / 2.0f - H_ANGLE / 2.0f; // -90도 - (72도 / 2)
+	float hAngle2 = -M_PI / 2.0f; // -90도 
 
 	// add top pole
 	vertices[0].Position.x = 0.0f;   // x
@@ -831,8 +832,8 @@ vector<Vertex> SphereMap::base_icosahedron()
 
 	for (int i = 1; i <= 5; i++)
 	{
-		i1 = i;       // upper row 
-		i2 = (i + 5); // lower row
+		i1 = i;       // upper row  1, 2, 3, 4, 5
+		i2 = (i + 5); // lower row  6, 7, 8, 9, 10 
 
 		z = radius * sinf(V_ANGLE);
 		xy = radius * cosf(V_ANGLE);
@@ -854,24 +855,25 @@ vector<Vertex> SphereMap::base_icosahedron()
 	vertices[11].Position.y = 0.0f;
 	vertices[11].Position.z = -radius;
 
-	this->base_indices = {
+	this->base_indices = { 
+		// ccw
 		0, 1, 2,
 		0, 2, 3,
 		0, 3, 4,
 		0, 4, 5,
 		0, 5, 1,
 
-		1, 6, 7,
-		2, 7, 8,
-		3, 8, 9,
-		4, 9, 10,
-		5, 10, 6,
+		1, 5, 10,
+		5, 4, 9,
+		4, 3, 8,
+		3, 2, 7,
+		2, 1, 6,
 
-		6, 1, 5,
-		7, 2, 1,
-		8, 3, 2,
-		9, 4, 3, 
-		10, 5, 4,
+		6, 1, 10,
+		7, 2, 6,
+		8, 3, 7,
+		9, 4, 8,
+		10, 5, 9,
 
 		11, 6, 10,
 		11, 7, 6,
@@ -880,20 +882,28 @@ vector<Vertex> SphereMap::base_icosahedron()
 		11, 10, 9
 	};
 
-	this->vertices = vertices;
-	return vertices;
+	this->base_vertices = vertices;
 }
 
 
 void SphereMap::generate(int subdivision)
 {
-	vector<Vertex> base = this->base_icosahedron();
+	for (int i = 0; i < subdivision; i++)
+	{
+		Vector<Vertex> tmp_vertices(this->base_vertices);
+		vector<GLuint> tmp_indices (this->base_indices);
+		for (int n = 0; n < (tmp_indices.size() / 3); n++)
+		{
+			// Getting 3 vertices from one triangle
+			Vertex v1 = tmp_vertices[tmp_indices[n]    ];
+			Vertex v2 = tmp_vertices[tmp_indices[n + 1]];
+			Vertex v3 = tmp_vertices[tmp_indices[n + 2]];
 
-	vector<float> tmpVertices;
-	vector<float> tmpIndices;
-	float *v1, *v2, *v3;
-	float newV1[3], newV2[3], newV3[3];
-	int index;
+			// new tria
+
+
+		}
+	}
 
 
 

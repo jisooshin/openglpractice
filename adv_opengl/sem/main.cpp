@@ -129,7 +129,7 @@ int main()
 	glBindVertexArray(vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, map.vertices.size() * sizeof(Vertex), map.vertices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, map.base_vertices.size() * sizeof(Vertex), map.base_vertices.data(), GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, map.base_indices.size() * sizeof(GLuint), map.base_indices.data(), GL_STATIC_DRAW);
@@ -140,19 +140,9 @@ int main()
 
 	Shader shader (s_path + "/models/icosahedron/ver.glsl",     s_path + "/models/icosahedron/frag.glsl");
 
-
-
-
-
-
-
-
-
-
 	int counter { 0 };
 	while(!glfwWindowShouldClose(window))
 	{
-
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		counter++;
@@ -164,9 +154,7 @@ int main()
 			lastFrame = currentFrame;
 			counter = 0;
 		}
-
 		processInput(window);
-
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 		TM matrix;
@@ -176,44 +164,33 @@ int main()
 			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 		matrix.projection = projection;
 		matrix.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-
-
 		glFrontFace(GL_CCW);
 		shader.use();
 		shader.setTransformMatrix("matrix", matrix);
 		glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, map.base_indices.size(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
-
 		/*	
 		// view matrix and projection matrix
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection(1.0f);
 		projection = glm::perspective(
 			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-		
 		mMatrix.projection = projection;
 		oMatrix.projection = projection;
-
 		mMatrix.view = view;
 		oMatrix.view = view;
-
 		light.position = glm::vec3(0.0f, 0.0f, 6.0f);
 		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
-			
 		screen.bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glStencilMask(0xFF);
 		modelShader.use();
 		modelShader.setTransformMatrix("matrix", mMatrix);
 		modelShader.setLight("point", light);
 		model.Draw(modelShader);
-
-
 		glStencilMask(0x00);
 		glDepthFunc(GL_LEQUAL);
 		cubemapShader.use();
@@ -222,8 +199,6 @@ int main()
 		cubemapShader.setMat4("projection", projection);
 		cubemap.Draw(cubemapShader);
 		glDepthFunc(GL_LESS);
-
-
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 		glStencilMask(0x00);
 		glDisable(GL_DEPTH_TEST);
@@ -234,17 +209,12 @@ int main()
 		glEnable(GL_DEPTH_TEST);
 		glStencilFunc(GL_ALWAYS, 0, 0xFF);
 		glStencilMask(0xFF);
-
 		screen.detach();
-
-
 		glDisable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT);
 		screen.Draw(fbShader);
 		glEnable(GL_DEPTH_TEST);
-
 		*/
-
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
