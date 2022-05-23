@@ -104,6 +104,7 @@ struct sumCoord
 GLuint TextureFromFile(const char *path, const string &directory);
 GLuint LoadCubeMap(vector<string> faces);
 string format_stringi(string &&fmt, int idx);
+glm::vec3 cross_product(glm::vec3 a, glm::vec3 b);
 
 class Shader
 {
@@ -220,6 +221,8 @@ class SphereMap
 	private:
 		vector<GLuint> indices;
 		vector<Vertex> vertices;
-		void build_base_icosahedron();
-		void generate(int subdivision);
+		void build_base(int s, int t);
+		void build_normal();
+		void divide_icosahedron(int subdivision);
+		Vertex get_half_vertex(Vertex v1, Vertex v2);
 };

@@ -809,11 +809,12 @@ void CubeMap::Draw(Shader& shader)
 
 SphereMap::SphereMap()
 {
-	this->build_base_icosahedron();
+	this->build_base();
+	this->build_normal();
 	// this->generate(2);
 }
 
-void SphereMap::build_base_icosahedron()
+void SphereMap::build_base(int s, int t)
 {
 	float radius = 1.0f;
 	const float H_ANGLE = 2.0f * M_PI / 5.0f; // radian, 72도 (360 / 5)
@@ -830,6 +831,11 @@ void SphereMap::build_base_icosahedron()
 	vertices[0].Position.y = 0.0f;   // y
 	vertices[0].Position.z = radius; // z 
 
+	vertices[0].TexCoord.x = 0.0f;   // x
+	vertices[0].TexCoord.y = 0.0f;   // y
+	vertices[0].TexCoord.z = radius; // z 
+
+
 	for (int i = 1; i <= 5; i++)
 	{
 		i1 = i;       // upper row  1, 2, 3, 4, 5
@@ -838,13 +844,21 @@ void SphereMap::build_base_icosahedron()
 		z = radius * sinf(V_ANGLE);
 		xy = radius * cosf(V_ANGLE);
 
-		vertices[i1].Position.x = xy * cosf(hAngle1);
-		vertices[i1].Position.y = xy * sinf(hAngle1);
-		vertices[i1].Position.z = z;
+		float _x = xy * cosf(hAngle1);
+		float _y = xy * sinf(hAngle1);
+		float _z = z;
+		float scale = 1.0f / sqrtf((_x * _x) + (_y * _y) + (_z * _z));
+		vertices[i1].Position.x = _x * scale;
+		vertices[i1].Position.y = _y * scale;
+		vertices[i1].Position.z = _z * scale;
 
-		vertices[i2].Position.x = xy * cosf(hAngle2);
-		vertices[i2].Position.y = xy * sinf(hAngle2);
-		vertices[i2].Position.z = -z;
+		_x = xy * cosf(hAngle2);
+		_y = xy * sinf(hAngle2);
+		_z = z;
+		scale = 1.0f / sqrtf((_x * _x) + (_y * _y) + (_z * _z));
+		vertices[i2].Position.x = _x * scale;  
+		vertices[i2].Position.y = _y * scale;  
+		vertices[i2].Position.z = -(_z * scale); 
 
 		hAngle1 += H_ANGLE;
 		hAngle2 += H_ANGLE;
@@ -863,11 +877,12 @@ void SphereMap::build_base_icosahedron()
 		0, 4, 5,
 		0, 5, 1,
 
-		1, 5, 10,
-		5, 4, 9,
-		4, 3, 8,
-		3, 2, 7,
-		2, 1, 6,
+		5, 10, 1,
+		4, 9, 5,
+		3, 8, 4,
+		2, 7, 3,
+		1, 6, 2,
+
 
 		6, 1, 10,
 		7, 2, 6,
@@ -882,16 +897,40 @@ void SphereMap::build_base_icosahedron()
 		11, 10, 9
 	};
 
+
 	this->base_vertices = vertices;
 }
 
-
-void SphereMap::generate(int subdivision)
+void SphereMap::build_normal()
 {
+	for (int i = 0; i < (this->base_indices.size() / 3); i++)
+	{
+		glm::vec3 v1 = this->base_vertices[this->base_indices[(i * 3)    ]].Position;
+		glm::vec3 v2 = this->base_vertices[this->base_indices[(i * 3) + 1]].Position;
+		glm::vec3 v3 = this->base_vertices[this->base_indices[(i * 3) + 2]].Position;
+
+		glm::vec3 v2_v1 = v2 - v1;
+		glm::vec3 v3_v1 = v3 - v1;
+
+		glm::vec3 norm = cross_product(v2_v1, v3_v1);
+		const float scale = 1.0f / ((norm.x * norm.x) + (norm.y * norm.y) + (norm.z * norm.z));
+
+		this->base_vertices[this->base_indices[(i * 3)    ]].Normal = norm * scale;
+		this->base_vertices[this->base_indices[(i * 3) + 1]].Normal = norm * scale;
+		this->base_vertices[this->base_indices[(i * 3) + 2]].Normal = norm * scale;
+
+	}
+
+}
+
+
+void SphereMap::divide_icosahedron(int subdivision)
+{
+	vector<Vertex> tmp_vertices(this->base_vertices);
+	vector<GLuint> tmp_indices (this->base_indices);
+
 	for (int i = 0; i < subdivision; i++)
 	{
-		Vector<Vertex> tmp_vertices(this->base_vertices);
-		vector<GLuint> tmp_indices (this->base_indices);
 		for (int n = 0; n < (tmp_indices.size() / 3); n++)
 		{
 			// Getting 3 vertices from one triangle
@@ -899,12 +938,34 @@ void SphereMap::generate(int subdivision)
 			Vertex v2 = tmp_vertices[tmp_indices[n + 1]];
 			Vertex v3 = tmp_vertices[tmp_indices[n + 2]];
 
-			// new tria
+			// new vertices
+
+			// Vertex new_v1 = ;
+			// Vertex new_v2 = ;
+			// Vertex new_v3 = ;
 
 
 		}
 	}
 
+}
+
+Vertex SphereMap::get_half_vertex(Vertex v1, Vertex v2)
+{
+	Vertex result;
+	result.Position.x = (v1.Position.x + v2.Position.x);
+	result.Position.y = (v1.Position.y + v2.Position.y);
+	result.Position.z = (v1.Position.z + v2.Position.z);
+	return result;
+
+}
 
 
+glm::vec3 cross_product(glm::vec3 a, glm::vec3 b)
+{
+	double x = (a.y * b.z) - (a.z * b.y);
+	double y = (a.x * b.z) - (a.z * b.x);
+	double z = (a.x * b.y) - (a.y * b.x);
+	glm::vec3 result(x, y, z);
+	return result;
 }

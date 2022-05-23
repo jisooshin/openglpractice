@@ -22,7 +22,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 
-Camera camera(glm::vec3(0.0f, 0.0f, 1.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
 float deltaTime  = 0.0f;
 float lastFrame  = 0.0f;
 bool  firstMouse = true;
@@ -118,7 +118,7 @@ int main()
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	SphereMap map;
 	GLuint vao, vbo, ebo;
@@ -131,14 +131,23 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, map.base_vertices.size() * sizeof(Vertex), map.base_vertices.data(), GL_STATIC_DRAW);
 
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, map.base_indices.size() * sizeof(GLuint), map.base_indices.data(), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
 	glBindVertexArray(0);
 
 	Shader shader (s_path + "/models/icosahedron/ver.glsl",     s_path + "/models/icosahedron/frag.glsl");
+	cout << " ============ " << endl;
+	for (const auto elem: map.base_vertices)
+	{
+		cout << glm::to_string(elem.Normal) << endl;
+	}
+	cout << " ============ " << endl;
 
 	int counter { 0 };
 	while(!glfwWindowShouldClose(window))
@@ -166,6 +175,8 @@ int main()
 		matrix.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 		glFrontFace(GL_CCW);
 		shader.use();
+		glm::vec3 position = glm::vec3(sin(glfwGetTime()), 0.0f, cos(glfwGetTime()));
+		shader.setVec3("light_position", position);
 		shader.setTransformMatrix("matrix", matrix);
 		glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, map.base_indices.size(), GL_UNSIGNED_INT, 0);
