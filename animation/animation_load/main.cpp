@@ -82,10 +82,56 @@ int main()
 	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 	light.power = 5.0f;
 
+	// Model model     (m_path + "/models/jumping_with_animation/Jumping Down.dae");
+	Model model     (m_path + "/models/gun/Handgun_dae.dae");
+	cout << "      [INSPECT]      " << endl;
+	Assimp::Importer importer;
+	const aiScene* scene = importer.ReadFile(
+		m_path + "/models/jumping_with_animation/Jumping Down.dae",
+		aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace);
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+	{
+		cout << "ERROR::ASSIMP::" << importer.GetErrorString() << endl;
+	}
+	auto animation = scene->mAnimations[0];
+	cout << "Durations : " << animation->mDuration << endl;
+	cout << "Ticks per seconds : " << animation->mTicksPerSecond << endl;
+	cout << "num Channels : " << animation->mNumChannels << endl;
+	
+	cout << "All Bones" << endl;
+	for (int i = 0; i < animation->mNumChannels; i++)
+	{
+		cout << animation->mChannels[i]->mNodeName.C_Str() << " | ";
+	}
+	cout << endl;
 
-	Model model     (m_path + "/models/gun/Handgun_dae.dae"    );
-	Model outline   (m_path + "/models/gun/Handgun_dae.dae"    );
-	// Model lightball (m_path + "/models/circle/circle.obj");
+
+	cout << "0th mesh's {" <<  scene->mMeshes[0]->mName.C_Str() 
+	<< "} num of bones : " << scene->mMeshes[0]->mNumBones << endl;
+
+	cout << "0th mesh's 0th bone name : " << scene->mMeshes[0]->mBones[0]->mName.C_Str() << endl;
+
+	cout << "Is Tan and BiTan : " << scene->mMeshes[0]->HasTangentsAndBitangents() << endl;
+
+	float bix = scene->mMeshes[1]->mBitangents->x;
+	float biy = scene->mMeshes[1]->mBitangents->y;
+	float biz = scene->mMeshes[1]->mBitangents->z;
+	printf("BiTan : (%f, %f, %f)\n", bix, biy, biz);
+
+	float x = scene->mMeshes[1]->mTangents->x;
+	float y = scene->mMeshes[1]->mTangents->y;
+	float z = scene->mMeshes[1]->mTangents->z;
+	printf("Tan: (%f, %f, %f)\n", x, y, z);
+	
+	printf("inner of bitan tan : (%f)\n", bix*x + biy*y + biz*z);
+
+
+
+
+
+	cout << "      [END]      " << endl;
+
+
 
 
 	TM mMatrix, lMatrix, oMatrix;
@@ -96,7 +142,7 @@ int main()
 	float angle = glm::radians(-90.0f);
 	glm::vec3 angle_vector = glm::vec3(1.0f, 0.0f, 0.0f);
 
-	mMatrix.model = glm::rotate(mMatrix.model, angle, angle_vector);
+	// mMatrix.model = glm::rotate(mMatrix.model, angle, angle_vector);
 	mMatrix.model = glm::scale(mMatrix.model, glm::vec3(scale_factor));
 	mMatrix.model = glm::translate(mMatrix.model, model_location);
 
@@ -185,17 +231,17 @@ int main()
 		glDepthFunc(GL_LESS);
 
 
-		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-		glStencilMask(0x00);
-		glDisable(GL_DEPTH_TEST);
-		// glFrontFace(GL_CCW);
-		outlineShader.use();
-		outlineShader.setTransformMatrix("matrix", oMatrix);
-		outlineShader.setFloat("outlineScale", 0.01f);
-		outline.Draw(outlineShader);
-		glEnable(GL_DEPTH_TEST);
-		glStencilFunc(GL_ALWAYS, 0, 0xFF);
-		glStencilMask(0xFF);
+		// glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		// glStencilMask(0x00);
+		// glDisable(GL_DEPTH_TEST);
+		// // glFrontFace(GL_CCW);
+		// outlineShader.use();
+		// outlineShader.setTransformMatrix("matrix", oMatrix);
+		// outlineShader.setFloat("outlineScale", 0.01f);
+		// outline.Draw(outlineShader);
+		// glEnable(GL_DEPTH_TEST);
+		// glStencilFunc(GL_ALWAYS, 0, 0xFF);
+		// glStencilMask(0xFF);
 
 		screen.detach();
 

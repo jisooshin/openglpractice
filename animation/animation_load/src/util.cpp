@@ -284,7 +284,7 @@ void Mesh::Draw(Shader &shader)
 		{
 			uniformName = format_stringi("material[%i].ms_Specular;", textures[i].materialIndex);
 		}
-		else if (textures[i].type == "texture_bump")
+		else if (textures[i].type == "texture_normal")
 		{
 			uniformName = format_stringi("material[%i].ms_Bump", textures[i].materialIndex);
 		}
@@ -364,11 +364,12 @@ void Model::loadModel(string path)
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(
 		path,
-		aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+		aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace);
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
 		cout << "ERROR::ASSIMP::" << importer.GetErrorString() << endl;
 	}
+	this->scene = scene;
 	directory = path.substr(0, path.find_last_of('/')); // 나중에 텍스쳐 불러올때 사용
 	this->gettingNecessaryData(scene->mRootNode, scene);
 	this->processNode(scene->mRootNode, scene);
@@ -509,8 +510,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 tran
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 		vector<Texture> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", materialIndex);
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-		vector<Texture> bumpMaps = this->loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_bump", materialIndex);
-		textures.insert(textures.end(), bumpMaps.begin(), bumpMaps.end());
+		vector<Texture> normalMaps = this->loadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal", materialIndex);
+		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 		materialIndex++;
 	}
 	for (auto& elem: textures)
@@ -546,6 +547,7 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 			texture.path = str.C_Str();
 			texture.materialIndex = materialIndex;
 			printf("\n<< %s : %s >>\n", typeName.c_str(), texture.path.c_str());
+			printf("FILE PATH : %s\n", str.C_Str());
 
 			aiColor4D color;
 			aiGetMaterialColor(mat, AI_MATKEY_COLOR_AMBIENT, &color);

@@ -21,6 +21,8 @@
 #include <assimp/postprocess.h>
 #include <assimp/material.h>
 
+#define MAX_BONE_INFLUENCE 4
+
 
 
 
@@ -65,6 +67,11 @@ struct Vertex
 	glm::vec3 Position; // vertex 좌표
 	glm::vec3 Normal;	// vertex 법선벡터
 	glm::vec2 TexCoord; // (만약 있다면) 해당 vertex가 Texture 이미지의 어느 좌표에 속하는지에 대한 좌표
+	glm::vec3 Tangent;   // u
+	glm::vec3 Bitangent; // v
+
+	int m_BoneIDs[MAX_BONE_INFLUENCE];
+	float m_Weights[MAX_BONE_INFLUENCE];
 };
 
 struct ColorProperty
@@ -165,6 +172,7 @@ class Model
 	public:
 		Model(string path); // 이 path 는 model을 담아두는 파일이 될 것
 		void Draw(Shader &shader);
+		const aiScene* scene;
 	private:
 		sumCoord sum_of_vertices;
 		vector<Mesh> meshes;

@@ -29,8 +29,13 @@
         <technique sid="common">
           <newparam sid="surface_gun_specular"> <surface> <init_from>gun_specular</init_from> </surface> </newparam>
           <newparam sid="sampler2D_gun_specular"> <sampler2D> <source>surface_gun_specular</source> </sampler2D> </newparam>
+
           <newparam sid="surface_gun_diffuse"> <surface> <init_from>gun_diffuse</init_from> </surface> </newparam>
           <newparam sid="sampler2D_gun_diffuse"> <sampler2D> <source>surface_gun_diffuse</source> </sampler2D> </newparam>
+
+          <newparam sid="surface_gun_normal"> <surface> <init_from>gun_normal</init_from> </surface> </newparam>
+          <newparam sid="sampler2D_gun_normal"> <sampler2D> <source>surface_gun_normal</source> </sampler2D> </newparam>
+
           <phong>
             <ambient>  <color sid="ambient">0.2 0.2 0.2 1</color> </ambient>
             <emission> <color sid="emission">0 0 0 1</color> </emission>
@@ -42,6 +47,13 @@
             <specular><texture texture="sampler2D_gun_specular" texcoord="UVMap"/></specular>
             <specular> <color sid="specular">0.8 0.8 0.8 1</color> </specular>
           </phong>
+          <extra>
+            <technique profile="FCOLLADA">
+              <bump bumptype="NORMALMAP">
+                <texture texture="sampler2D_gun_normal" texcoord="UVMap" />
+              </bump>
+            </technique>
+          </extra>
 
         </technique>
 
