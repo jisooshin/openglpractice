@@ -221,8 +221,9 @@ class SphereMap
 	private:
 		vector<GLuint> indices;
 		vector<Vertex> vertices;
-		void build_base(int s, int t);
+		void build_base();
 		void build_normal();
+		void expand_and_texturing(int width, int height);
 		void divide_icosahedron(int subdivision);
 		Vertex get_half_vertex(Vertex v1, Vertex v2);
 };

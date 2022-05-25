@@ -811,10 +811,10 @@ SphereMap::SphereMap()
 {
 	this->build_base();
 	this->build_normal();
-	// this->generate(2);
+	this->expand_and_texturing(8192, 4096);
 }
 
-void SphereMap::build_base(int s, int t)
+void SphereMap::build_base()
 {
 	float radius = 1.0f;
 	const float H_ANGLE = 2.0f * M_PI / 5.0f; // radian, 72도 (360 / 5)
@@ -833,7 +833,6 @@ void SphereMap::build_base(int s, int t)
 
 	vertices[0].TexCoord.x = 0.0f;   // x
 	vertices[0].TexCoord.y = 0.0f;   // y
-	vertices[0].TexCoord.z = radius; // z 
 
 
 	for (int i = 1; i <= 5; i++)
@@ -871,30 +870,29 @@ void SphereMap::build_base(int s, int t)
 
 	this->base_indices = { 
 		// ccw
-		0, 1, 2,
-		0, 2, 3,
-		0, 3, 4,
-		0, 4, 5,
-		0, 5, 1,
+		0,  1, 2,
+		0,  2, 3,
+		0,  3, 4,
+		0,  4, 5,
+		0,  5, 1,
 
+		1,  6, 2,
+		2,  7, 3,
+		3,  8, 4,
+		4,  9, 5,
 		5, 10, 1,
-		4, 9, 5,
-		3, 8, 4,
-		2, 7, 3,
-		1, 6, 2,
 
+		7,  2,  6,
+		8,  3,  7,
+		9,  4,  8,
+		10, 5,  9,
+		6,  1, 10,
 
-		6, 1, 10,
-		7, 2, 6,
-		8, 3, 7,
-		9, 4, 8,
-		10, 5, 9,
-
-		11, 6, 10,
-		11, 7, 6,
-		11, 8, 7,
-		11, 9, 8,
-		11, 10, 9
+		11,  7,  6,
+		11,  8,  7,
+		11,  9,  8,
+		11, 10,  9,
+		11,  6, 10
 	};
 
 
@@ -921,6 +919,81 @@ void SphereMap::build_normal()
 
 	}
 
+}
+
+void SphereMap::expand_and_texturing(int width, int height)
+{
+	vector<Vertex> vertices;
+	vector<GLuint> indices;
+	GLuint new_index { 0 };
+
+	float UNIT_S = 1.0f / 11.0f;
+	float UNIT_T = 1.0f / 3.0f;
+
+	int top = 0;
+	int second = 0;
+	int third = 0;
+	int bottom = 0;
+	for (const auto idx: this->base_indices)
+	{
+		// triangle;
+		Vertex v = this->base_vertices[idx];
+		switch (idx)
+		{
+			// idx 가 0인 경우
+			case 0:
+				v.TexCoord.x = (float)(1 + (top * 2)) * UNIT_S;
+				v.TexCoord.y = 0.0f;
+				top++;
+				break;
+			case 1:
+				if (second % 2 == 1)
+				{
+					v.TexCoord.x = 0.0f;
+					v.TexCoord.y = UNIT_T;
+				}
+				else
+				{
+					v.TexCoord.x = (float)10 * UNIT_S;
+					v.TexCoord.y = UNIT_T;
+				}
+				second++;
+				break;
+			case 2: case 3: case 4: case 5:
+				v.TexCoord.x = (float)(idx * 2 - 2) * UNIT_S;
+				v.TexCoord.y = UNIT_T;
+				break;
+			case 6:
+				if (third % 2 == 1)
+				{
+					v.TexCoord.x = UNIT_S;
+					v.TexCoord.y = (float)2 * UNIT_T;
+				}
+				else
+				{
+					v.TexCoord.x = (float)11 * UNIT_S;
+					v.TexCoord.y = (float)2 * UNIT_T;
+				}
+				third++;
+				break;
+			case 7: case 8: case 9: case 10:
+				v.TexCoord.x = (float)(2 * idx - 11) * UNIT_S;
+				v.TexCoord.y = (float)2 * UNIT_T;
+				break;
+			case 11:
+				v.TexCoord.x = (float)(2 * bottom) * UNIT_S;
+				v.TexCoord.y = (float)3 * UNIT_T;
+				bottom++;
+				break;
+		}
+		vertices.emplace_back(v);
+		indices.emplace_back(new_index++);
+	}
+	this->base_vertices.clear();
+	this->base_indices.clear();
+
+	this->base_vertices = vertices;
+	this->base_indices = indices;
 }
 
 
@@ -952,10 +1025,29 @@ void SphereMap::divide_icosahedron(int subdivision)
 
 Vertex SphereMap::get_half_vertex(Vertex v1, Vertex v2)
 {
+	// base radius = 1.0
 	Vertex result;
-	result.Position.x = (v1.Position.x + v2.Position.x);
-	result.Position.y = (v1.Position.y + v2.Position.y);
-	result.Position.z = (v1.Position.z + v2.Position.z);
+	double px = (v1.Position.x + v2.Position.x);
+	double py = (v1.Position.y + v2.Position.y);
+	double pz = (v1.Position.z + v2.Position.z);
+	float scale = 1.0f / sqrtf((px * px) + (py * py) + (pz * pz));
+	result.Position.x = px * scale;
+	result.Position.y = py * scale;
+	result.Position.z = pz * scale;
+
+	double nx = (v1.Normal.x + v2.Normal.x);
+	double ny = (v1.Normal.y + v2.Normal.y);
+	double nz = (v1.Normal.z + v2.Normal.z);
+	scale = 1.0f / sqrtf((nx * nx) + (ny * ny) + (nz * nz));
+	result.Normal.x = nx * scale;
+	result.Normal.y = ny * scale;
+	result.Normal.z = nz * scale;
+
+	float tx = (v1.TexCoord.x + v2.TexCoord.x) / 2.0f;
+	float ty = (v1.TexCoord.y + v2.TexCoord.y) / 2.0f;
+	result.TexCoord.x = tx;
+	result.TexCoord.y = ty;
+
 	return result;
 
 }
