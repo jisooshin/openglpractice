@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 3.16.3 )
-project( cubemap )
+project( advanced_data )
 
 set ( PROJECT_VERSION_MAJOR 0 )
 set ( PROJECT_VERSION_MINOR 1 )
