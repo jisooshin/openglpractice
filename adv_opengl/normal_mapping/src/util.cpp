@@ -280,11 +280,11 @@ void Mesh::Draw(Shader &shader)
 		{
 			uniformName = format_stringi("material[%i].ms_Diffuse", textures[i].materialIndex);
 		}
-		else if (textures[i].type == "texture_specular")
+		if (textures[i].type == "texture_specular")
 		{
 			uniformName = format_stringi("material[%i].ms_Specular;", textures[i].materialIndex);
 		}
-		else if (textures[i].type == "texture_normal")
+		if (textures[i].type == "texture_normal")
 		{
 			uniformName = format_stringi("material[%i].ms_Normal", textures[i].materialIndex);
 		}
@@ -295,7 +295,6 @@ void Mesh::Draw(Shader &shader)
 		shader.setFloat(
 			format_stringi("material[%i].mf_Shininess", textures[i].materialIndex).c_str(),
 			textures[i].shiness);
-
 		shader.setVec3(
 			format_stringi("material[%i].mv_AmbientCoeff", textures[i].materialIndex).c_str(),
 			textures[i].colorP.ambient);
@@ -422,7 +421,7 @@ void Model::gettingNecessaryData(aiNode *node, const aiScene *scene)
 
 void Model::processNode(aiNode *node, const aiScene *scene)
 {
-	cout << "NODE Name : " << node->mName.C_Str() << endl;
+	// cout << "NODE Name : " << node->mName.C_Str() << endl;
 	glm::mat4 transformMat = glm::transpose(glm::make_mat4(&node->mTransformation.a1));
 	for (size_t i = 0; i < node->mNumMeshes; i++)
 	{
@@ -508,7 +507,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 tran
 			glm::vec2 tmpVector2;
 			tmpVector2.x = mesh->mTextureCoords[0][i].x;
 			tmpVector2.y = mesh->mTextureCoords[0][i].y;
-			printf("Pass [%d], %s \n", __LINE__, __PRETTY_FUNCTION__);
 			vertex.TexCoord = tmpVector2;
 		}
 		else

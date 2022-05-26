@@ -10,9 +10,13 @@ struct tMatrix
 	mat4 model, view, projection;
 };
 
-out vec2 TexCoord;
-out vec3 Normal;
-out vec3 FragPos;
+out VS_OUT
+{
+	vec2 TexCoord;
+	vec3 Normal;
+	vec3 FragPos;
+	mat3 TBN;
+} vs_out;
 
 uniform tMatrix matrix;
 
@@ -20,12 +24,12 @@ uniform tMatrix matrix;
 void main()
 {
 	gl_Position = matrix.projection * matrix.view * matrix.model * vec4(aPos, 1.0);
-	Normal = vec3(transpose(inverse(matrix.model)) * vec4(aNormal, 0.0));
-	TexCoord = aTexCoord;
-	FragPos = aPos;
+	vs_out.Normal = vec3(transpose(inverse(matrix.model)) * vec4(aNormal, 0.0));
+	vs_out.TexCoord = aTexCoord;
+	vs_out.FragPos = aPos;
 
 	vec3 T = normalize(vec3(matrix.model * vec4(aTangent, 0.0)));
 	vec3 B = normalize(vec3(matrix.model * vec4(aBitangent, 0.0)));
 	vec3 N = normalize(vec3(matrix.model * vec4(aNormal, 0.0)));
-	mat3 TBN = mat3(T, B, N);
+	vs_out.TBN = mat3(T, B, N);
 }

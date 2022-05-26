@@ -69,8 +69,8 @@ int main()
 
 	Shader fbShader     (s_path + "/screen/main/ver.glsl",     s_path + "/screen/main/frag.glsl"    );
 	Shader modelShader  (s_path + "/models/base/ver.glsl",     s_path + "/models/base/frag.glsl"    );
-	Shader lightShader  (s_path + "/models/base/ver.glsl",     s_path + "/models/lights/frag.glsl"  );
-	Shader outlineShader(s_path + "/effects/outline/ver.glsl", s_path + "/effects/outline/frag.glsl");
+	// Shader lightShader  (s_path + "/models/base/ver.glsl",     s_path + "/models/lights/frag.glsl"  );
+	// Shader outlineShader(s_path + "/effects/outline/ver.glsl", s_path + "/effects/outline/frag.glsl");
 	Shader cubemapShader(s_path + "/background/ver.glsl", s_path + "/background/frag.glsl");
 
 	fbShader.use();
@@ -80,11 +80,12 @@ int main()
 
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
 	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
-	light.power = 4.0f;
+	light.power = 1.0f;
 
 	// Model model     (m_path + "/models/jumping_with_animation/Jumping Down.dae");
-	cout << "BEFORE load handgun Model " << endl;
-	Model model     (m_path + "/models/gun/Handgun_dae.dae");
+	Model model     (m_path + "/models/backpack/backpack.dae");
+	modelShader.use();
+	modelShader.setBool("isNormalMap", true);
 
 	/*
 	cout << "      [INSPECT]      " << endl;
@@ -138,9 +139,9 @@ int main()
 	mMatrix.model = glm::scale(mMatrix.model, glm::vec3(scale_factor));
 	mMatrix.model = glm::translate(mMatrix.model, model_location);
 
-	oMatrix.model = glm::rotate(oMatrix.model, angle, angle_vector);
-	oMatrix.model = glm::scale(oMatrix.model, glm::vec3(scale_factor));
-	oMatrix.model = glm::translate(oMatrix.model, model_location);
+	// oMatrix.model = glm::rotate(oMatrix.model, angle, angle_vector);
+	// oMatrix.model = glm::scale(oMatrix.model, glm::vec3(scale_factor));
+	// oMatrix.model = glm::translate(oMatrix.model, model_location);
 
 	// lMatrix.model = glm::scale(lMatrix.model, glm::vec3(scale_factor * 0.3f));
 
@@ -180,14 +181,14 @@ int main()
 			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 		
 		mMatrix.projection = projection;
-		oMatrix.projection = projection;
+		// oMatrix.projection = projection;
 		// lMatrix.projection = projection;
 
 		mMatrix.view = view;
-		oMatrix.view = view;
+		// oMatrix.view = view;
 		// lMatrix.view = view;
 
-		light.position = glm::vec3(sin(glfwGetTime()) * 1.0f, 3.0f, cos(glfwGetTime()) * 1.0f);
+		light.position = glm::vec3(sin(glfwGetTime()) * 1.0f, 0.0f, cos(glfwGetTime()) * 1.0f);
 		// light.position = glm::vec3(1.0f, 1.0f, 1.0f);
 		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
