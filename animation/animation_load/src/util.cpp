@@ -286,7 +286,7 @@ void Mesh::Draw(Shader &shader)
 		}
 		else if (textures[i].type == "texture_normal")
 		{
-			uniformName = format_stringi("material[%i].ms_Bump", textures[i].materialIndex);
+			uniformName = format_stringi("material[%i].ms_Normal", textures[i].materialIndex);
 		}
 
 		shader.setInt(uniformName.c_str(), (int)i);

@@ -84,6 +84,9 @@ int main()
 
 	// Model model     (m_path + "/models/jumping_with_animation/Jumping Down.dae");
 	Model model     (m_path + "/models/gun/Handgun_dae.dae");
+
+
+
 	cout << "      [INSPECT]      " << endl;
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(
@@ -124,11 +127,6 @@ int main()
 	printf("Tan: (%f, %f, %f)\n", x, y, z);
 	
 	printf("inner of bitan tan : (%f)\n", bix*x + biy*y + biz*z);
-
-
-
-
-
 	cout << "      [END]      " << endl;
 
 
@@ -142,7 +140,7 @@ int main()
 	float angle = glm::radians(-90.0f);
 	glm::vec3 angle_vector = glm::vec3(1.0f, 0.0f, 0.0f);
 
-	// mMatrix.model = glm::rotate(mMatrix.model, angle, angle_vector);
+	mMatrix.model = glm::rotate(mMatrix.model, angle, angle_vector);
 	mMatrix.model = glm::scale(mMatrix.model, glm::vec3(scale_factor));
 	mMatrix.model = glm::translate(mMatrix.model, model_location);
 

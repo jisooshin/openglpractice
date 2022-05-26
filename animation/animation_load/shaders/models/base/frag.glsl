@@ -10,7 +10,7 @@ struct Material
 {
 	sampler2D ms_Diffuse;
 	sampler2D ms_Specular;
-	sampler2D ms_Bump;
+	sampler2D ms_Normal;
 	float mf_Shininess;
 	vec3 mv_AmbientCoeff, mv_DiffuseCoeff, mv_SpecularCoeff;
 };
