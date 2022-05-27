@@ -279,16 +279,18 @@ void Mesh::Draw(Shader &shader)
 		if (textures[i].type == "texture_diffuse")
 		{
 			uniformName = format_stringi("material[%i].ms_Diffuse", textures[i].materialIndex);
+			shader.setBool(format_stringi("material[%i].exist_DiffuseMap", textures[i].materialIndex), true);
 		}
-		if (textures[i].type == "texture_specular")
+		else if (textures[i].type == "texture_specular")
 		{
-			uniformName = format_stringi("material[%i].ms_Specular;", textures[i].materialIndex);
+			uniformName = format_stringi("material[%i].ms_Specular", textures[i].materialIndex);
+			shader.setBool(format_stringi("material[%i].exist_SpecularMap", textures[i].materialIndex), true);
 		}
-		if (textures[i].type == "texture_normal")
+		else if (textures[i].type == "texture_normal")
 		{
 			uniformName = format_stringi("material[%i].ms_Normal", textures[i].materialIndex);
-		}
-
+			shader.setBool(format_stringi("material[%i].exist_NormalMap", textures[i].materialIndex), true);
+		} 
 		shader.setInt(uniformName.c_str(), (int)i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 
