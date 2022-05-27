@@ -272,6 +272,7 @@ void Mesh::Draw(Shader &shader)
 	for (size_t i = 0; i < textures.size(); i++)
 	{
 		// printf("NodeName = [%-30s]   size : %lu \t material index : %lu\n", textures[i].node_name.c_str(), textures.size(), textures[i].materialIndex);
+		shader.setBool("one_or_more_textures", true);
 		glActiveTexture(GL_TEXTURE0 + i);
 		string number;
 		string uniformName;

@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 layout (location = 0) out vec4 FragColor;
 
 
@@ -35,13 +35,23 @@ struct PointLight
 
 uniform Material material[3]; // 일단 3개만 선언해놓고 판단
 uniform PointLight point;
+uniform bool one_or_more_textures;
 
 vec4 calculate_point_light(PointLight point, Material material);
 
 void main()
 {
 	vec4 result;
-	result = calculate_point_light(point, material[0]);
+	if (one_or_more_textures)
+	{
+		result = calculate_point_light(point, material[0]);
+	}
+	else 
+	{
+		vec3 normal = normalize(fs_in.Normal);
+		vec3 lightPosition = normalize(point.lv_Position);
+		result = vec4(vec3(0.0, 1.0, 0.0) * max(dot(lightPosition, normal), 0.0), 1.0);
+	}
 	FragColor = result;
 }
 
@@ -57,7 +67,7 @@ vec4 calculate_point_light(PointLight point, Material material)
 	{
 		normal = texture(material.ms_Normal, fs_in.TexCoord).rgb;
 		normal = normalize(normal) * 2.0 - 1.0;
-		normal = normalize(normal);
+		normal = normalize(fs_in.TBN * normal);
 	}
 	else
 	{
@@ -86,7 +96,6 @@ vec4 calculate_point_light(PointLight point, Material material)
 	vec3 diffuse;
 	if (material.exist_DiffuseMap)
 	{
-
 		diffuse = texture(material.ms_Diffuse, fs_in.TexCoord).rgb * max(dot(lightPosition, normal), 0.0);
 	}
 	else 
@@ -103,7 +112,9 @@ vec4 calculate_point_light(PointLight point, Material material)
 	vec3 specular;
 	if (material.exist_SpecularMap)
 	{
-		specular = texture(material.ms_Diffuse, fs_in.TexCoord).rgb * spec * normalize(texture(material.ms_Specular, fs_in.TexCoord).rgb);
+		specular = texture(material.ms_Diffuse, fs_in.TexCoord).rgb
+					* spec 
+					* normalize(texture(material.ms_Specular, fs_in.TexCoord).x);
 	}
 	else
 	{

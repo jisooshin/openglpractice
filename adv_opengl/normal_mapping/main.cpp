@@ -80,14 +80,12 @@ int main()
 
 	Light light(lightType::POINT, 1.0f, 1.0f, 0.09f, 0.032f);
 	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
-	light.power = 1.0f;
+	light.power = 2.0f;
 
-	// Model model     (m_path + "/models/jumping_with_animation/Jumping Down.dae");
-	Model model     (m_path + "/models/backpack/backpack.dae");
-	modelShader.use();
-	modelShader.setBool("isNormalMap", true);
-
-	/*
+	Model model     (m_path + "/models/jumping_with_animation/Jumping Down.dae");
+	// Model model     (m_path + "/models/backpack/backpack.dae");
+	// Model model     (m_path + "/models/gun/Handgun_dae.dae");
+	cout << "<=============================================>" << endl;
 	cout << "      [INSPECT]      " << endl;
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(
@@ -101,28 +99,30 @@ int main()
 	cout << "Durations : " << animation->mDuration << endl;
 	cout << "Ticks per seconds : " << animation->mTicksPerSecond << endl;
 	cout << "num Channels : " << animation->mNumChannels << endl;
-	
-	cout << "All Bones" << endl;
-	for (int i = 0; i < animation->mNumChannels; i++)
+	cout << " ---- " << endl;
+	cout << animation->mNumChannels << endl;
+	cout << animation->mChannels[0]->mNodeName.C_Str() << endl;
+	printf("Position: (%f, %f, %f)\n",
+		animation->mChannels[0]->mPositionKeys->mValue.x,
+		animation->mChannels[0]->mPositionKeys->mValue.y,
+		animation->mChannels[0]->mPositionKeys->mValue.z
+	);
+
+	printf("Scaling: (%f, %f, %f)\n",
+		animation->mChannels[0]->mScalingKeys->mValue.x,
+		animation->mChannels[0]->mScalingKeys->mValue.y,
+		animation->mChannels[0]->mScalingKeys->mValue.z
+	);
+	cout << "2 Children children: " << scene->mRootNode->mChildren[2]-> mNumChildren << endl;
+
+	int nth_mesh = 1;
+	for (int i = 0; i < scene->mMeshes[nth_mesh]->mNumBones; i++)
 	{
-		cout << animation->mChannels[i]->mNodeName.C_Str() << " | ";
+		cout << scene->mMeshes[nth_mesh]->mBones[i]->mName.C_Str() << endl;
 	}
-	cout << endl;
-	cout << "0th mesh's {" <<  scene->mMeshes[0]->mName.C_Str() 
-	<< "} num of bones : " << scene->mMeshes[0]->mNumBones << endl;
-	cout << "0th mesh's 0th bone name : " << scene->mMeshes[0]->mBones[0]->mName.C_Str() << endl;
-	cout << "Is Tan and BiTan : " << scene->mMeshes[0]->HasTangentsAndBitangents() << endl;
-	float bix = scene->mMeshes[1]->mBitangents->x;
-	float biy = scene->mMeshes[1]->mBitangents->y;
-	float biz = scene->mMeshes[1]->mBitangents->z;
-	printf("BiTan : (%f, %f, %f)\n", bix, biy, biz);
-	float x = scene->mMeshes[1]->mTangents->x;
-	float y = scene->mMeshes[1]->mTangents->y;
-	float z = scene->mMeshes[1]->mTangents->z;
-	printf("Tan: (%f, %f, %f)\n", x, y, z);
-	printf("inner of bitan tan : (%f)\n", bix*x + biy*y + biz*z);
+	cout << " ---- " << endl;
 	cout << "      [END]      " << endl;
-	*/
+	cout << "<=============================================>" << endl;
 
 
 
@@ -135,7 +135,7 @@ int main()
 	float angle = glm::radians(-90.0f);
 	glm::vec3 angle_vector = glm::vec3(1.0f, 0.0f, 0.0f);
 
-	mMatrix.model = glm::rotate(mMatrix.model, angle, angle_vector);
+	// mMatrix.model = glm::rotate(mMatrix.model, angle, angle_vector);
 	mMatrix.model = glm::scale(mMatrix.model, glm::vec3(scale_factor));
 	mMatrix.model = glm::translate(mMatrix.model, model_location);
 
@@ -188,8 +188,8 @@ int main()
 		// oMatrix.view = view;
 		// lMatrix.view = view;
 
-		light.position = glm::vec3(sin(glfwGetTime()) * 1.0f, 0.0f, cos(glfwGetTime()) * 1.0f);
-		// light.position = glm::vec3(1.0f, 1.0f, 1.0f);
+		// light.position = glm::vec3(sin(glfwGetTime()) * 1.0f, 0.0f, cos(glfwGetTime()) * 1.0f);
+		light.position = glm::vec3(1.0f, 1.0f, 1.0f);
 		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
 
