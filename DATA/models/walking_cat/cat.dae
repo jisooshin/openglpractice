@@ -27,10 +27,12 @@
           <lambert>
             <emission>
               <color sid="emission">0 0 0 1</color>
-            </emission>
+      </emission>
+      <!--
             <diffuse>
               <texture texture="Tex_Cat_Caramel_jpg-sampler" texcoord="UVMap"/>
-            </diffuse>
+	      </diffuse>
+      -->
             <index_of_refraction>
               <float sid="ior">1.45</float>
             </index_of_refraction>

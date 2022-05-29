@@ -82,47 +82,50 @@ int main()
 	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 	light.power = 2.0f;
 
-	Model model     (m_path + "/models/jumping_with_animation/Jumping Down.dae");
+	// Model model     (m_path + "/models/jumping_with_animation/Jumping Down.dae");
 	// Model model     (m_path + "/models/backpack/backpack.dae");
+	Model model     (m_path + "/models/walking_cat/cat.dae");
 	// Model model     (m_path + "/models/gun/Handgun_dae.dae");
-	cout << "<=============================================>" << endl;
-	cout << "      [INSPECT]      " << endl;
-	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(
-		m_path + "/models/jumping_with_animation/Jumping Down.dae",
-		aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace);
-	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-	{
-		cout << "ERROR::ASSIMP::" << importer.GetErrorString() << endl;
-	}
-	auto animation = scene->mAnimations[0];
-	cout << "Durations : " << animation->mDuration << endl;
-	cout << "Ticks per seconds : " << animation->mTicksPerSecond << endl;
-	cout << "num Channels : " << animation->mNumChannels << endl;
-	cout << " ---- " << endl;
-	cout << animation->mNumChannels << endl;
-	cout << animation->mChannels[0]->mNodeName.C_Str() << endl;
-	printf("Position: (%f, %f, %f)\n",
-		animation->mChannels[0]->mPositionKeys->mValue.x,
-		animation->mChannels[0]->mPositionKeys->mValue.y,
-		animation->mChannels[0]->mPositionKeys->mValue.z
-	);
 
-	printf("Scaling: (%f, %f, %f)\n",
-		animation->mChannels[0]->mScalingKeys->mValue.x,
-		animation->mChannels[0]->mScalingKeys->mValue.y,
-		animation->mChannels[0]->mScalingKeys->mValue.z
-	);
-	cout << "2 Children children: " << scene->mRootNode->mChildren[2]-> mNumChildren << endl;
 
-	int nth_mesh = 1;
-	for (int i = 0; i < scene->mMeshes[nth_mesh]->mNumBones; i++)
-	{
-		cout << scene->mMeshes[nth_mesh]->mBones[i]->mName.C_Str() << endl;
-	}
-	cout << " ---- " << endl;
-	cout << "      [END]      " << endl;
-	cout << "<=============================================>" << endl;
+	// cout << "<=============================================>" << endl;
+	// cout << "      [INSPECT]      " << endl;
+	// Assimp::Importer importer;
+	// const aiScene* scene = importer.ReadFile(
+	// 	m_path + "/models/gun/Handgun_dae.dae",
+	// 	aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace);
+	// if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+	// {
+	// 	cout << "ERROR::ASSIMP::" << importer.GetErrorString() << endl;
+	// }
+	// auto animation = scene->mAnimations[0];
+	// cout << "Durations : " << animation->mDuration << endl;
+	// cout << "Ticks per seconds : " << animation->mTicksPerSecond << endl;
+	// cout << "num Channels : " << animation->mNumChannels << endl;
+	// cout << " ---- " << endl;
+	// cout << animation->mNumChannels << endl;
+	// cout << animation->mChannels[0]->mNodeName.C_Str() << endl;
+	// printf("Position: (%f, %f, %f)\n",
+	// 	animation->mChannels[0]->mPositionKeys->mValue.x,
+	// 	animation->mChannels[0]->mPositionKeys->mValue.y,
+	// 	animation->mChannels[0]->mPositionKeys->mValue.z
+	// );
+
+	// printf("Scaling: (%f, %f, %f)\n",
+	// 	animation->mChannels[0]->mScalingKeys->mValue.x,
+	// 	animation->mChannels[0]->mScalingKeys->mValue.y,
+	// 	animation->mChannels[0]->mScalingKeys->mValue.z
+	// );
+	// cout << "2 Children children: " << scene->mRootNode->mChildren[2]-> mNumChildren << endl;
+
+	// int nth_mesh = 1;
+	// for (int i = 0; i < scene->mMeshes[nth_mesh]->mNumBones; i++)
+	// {
+	// 	cout << scene->mMeshes[nth_mesh]->mBones[i]->mName.C_Str() << endl;
+	// }
+	// cout << " ---- " << endl;
+	// cout << "      [END]      " << endl;
+	// cout << "<=============================================>" << endl;
 
 
 
@@ -135,7 +138,7 @@ int main()
 	float angle = glm::radians(-90.0f);
 	glm::vec3 angle_vector = glm::vec3(1.0f, 0.0f, 0.0f);
 
-	// mMatrix.model = glm::rotate(mMatrix.model, angle, angle_vector);
+	mMatrix.model = glm::rotate(mMatrix.model, angle, angle_vector);
 	mMatrix.model = glm::scale(mMatrix.model, glm::vec3(scale_factor));
 	mMatrix.model = glm::translate(mMatrix.model, model_location);
 
