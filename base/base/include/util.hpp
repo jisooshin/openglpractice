@@ -20,6 +20,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/material.h>
+#include <assimp/version.h>
 
 #define MAX_BONE_INFLUENCE 4
 

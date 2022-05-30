@@ -367,8 +367,9 @@ void Model::Draw(Shader &shader)
 
 void Model::loadModel(string path)
 {
-	cout << " ===== START ====== " << endl;
-	cout << "MODEL : " << path << endl;
+	printf(" ========================= START =========================== \n");
+	printf("ASSIMP::VERSION::%d.%d\n", aiGetVersionMajor(), aiGetVersionMinor());
+	cout << "TARGET: " << path << endl;
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(
 		path,
@@ -381,7 +382,7 @@ void Model::loadModel(string path)
 	directory = path.substr(0, path.find_last_of('/')); // 나중에 텍스쳐 불러올때 사용
 	this->gettingNecessaryData(scene->mRootNode, scene);
 	this->processNode(scene->mRootNode, scene);
-	cout <<  " ====== END ====== " << endl << endl;
+	printf(" ========================= END =========================== \n");
 }
 
 
@@ -495,8 +496,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, const glm::mat4 tran
 			vertex.Tangent = tmpVector3;
 
 		}
-		// printf("Tangent : (%f, %f, %f)\t", mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
-		// printf("Bitangent : (%f, %f, %f)\n", mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
 
 
 		t = transformMat * glm::vec4(vertex.Normal, 1.0f);
@@ -802,7 +801,9 @@ void CubeMap::set(string path)
 	int i = 0;
 	for (const auto& elem: file_vector)
 	{
-		cout << "( " << i << " )" << "[" << __PRETTY_FUNCTION__ << "]" << " " << "ORDER OF CUBE TEXTURE FILES." << elem << endl;
+		cout << "(" << i << ")" << " [" << __PRETTY_FUNCTION__ << "] " <<
+		"ORDER OF CUBE TEXTURE FILES. " <<
+		elem.substr(elem.find_last_of('/') + 1) << endl;
 		i++;
 	}
 
