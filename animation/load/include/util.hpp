@@ -193,16 +193,18 @@ class Model
 class Screen
 {
 	public:
-		Screen(size_t width, size_t height);
+		Screen(size_t width, size_t height, unsigned int samples = 8);
 		void Draw(Shader& shader);
 		void bind();
 		void detach();
-
+		void apply_msaa();
+		GLuint screen_id, msaa_id, render_id;
 		size_t width, height;
-		GLuint id;
-		GLuint vao, vbo;
-		GLuint color_buffer, render_buffer;
+
 	private:
+		GLuint vao, vbo;
+		GLuint color_buffer, msaa_buffer;
+		unsigned int samples;
 		void set();
 		
 };

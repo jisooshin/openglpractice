@@ -607,7 +607,8 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 }
 
 
-Screen::Screen(size_t width, size_t height) : width(width), height(height)
+Screen::Screen(size_t width, size_t height, unsigned int samples)
+	: width(width), height(height), samples(samples)
 {
 	set();
 }
@@ -636,10 +637,29 @@ void Screen::set()
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(sizeof(float) * 2));
 	glBindVertexArray(0);
 
-	glGenFramebuffers(1, &this->id);
-	glBindFramebuffer(GL_FRAMEBUFFER, this->id);
 
-	// color
+	// anti-aliasing buffer
+	glGenFramebuffers(1, &this->msaa_id);
+	glBindFramebuffer(GL_FRAMEBUFFER, this->msaa_id);
+	glGenTextures(1, &this->msaa_buffer);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, this->msaa_buffer);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, this->samples, GL_RGB, this->width, this->height, GL_TRUE);
+	glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, this->msaa_buffer, 0);
+
+	glGenRenderbuffers(1, &this->render_id);
+	glBindRenderbuffer(GL_RENDERBUFFER, this->render_id);
+	glRenderbufferStorageMultisample(GL_RENDERBUFFER, this->samples, GL_DEPTH24_STENCIL8, width, height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->render_id);
+	
+
+	// screen buffer
+	glGenFramebuffers(1, &this->screen_id);
+	glBindFramebuffer(GL_FRAMEBUFFER, this->screen_id);
+
 	glGenTextures(1, &this->color_buffer);
 	glBindTexture(GL_TEXTURE_2D, this->color_buffer);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
@@ -648,10 +668,6 @@ void Screen::set()
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->color_buffer, 0);
 
 	// renderbuffer
-	glGenRenderbuffers(1, &this->render_buffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, this->render_buffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, this->render_buffer);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -667,7 +683,15 @@ void Screen::set()
 
 void Screen::bind()
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, this->id);
+	glBindFramebuffer(GL_FRAMEBUFFER, this->screen_id);
+}
+
+void Screen::apply_msaa()
+{
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, this->msaa_id);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->screen_id);
+	glBlitFramebuffer(0, 0, this->width, this->height, 0, 0, this->width, this->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Screen::detach()
@@ -677,12 +701,14 @@ void Screen::detach()
 
 void Screen::Draw(Shader& shader)
 {
+
 	shader.use();
 	glBindVertexArray(this->vao);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, this->color_buffer);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
+	
 }
 
 

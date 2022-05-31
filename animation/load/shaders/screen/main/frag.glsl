@@ -13,7 +13,7 @@ vec4 gaussianBlur();
 
 void main()
 {
-	FragColor = gaussianBlur();
+	FragColor = original();
 }
 
 vec4 original()

@@ -36,6 +36,7 @@ int main()
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	// glfwWindowHint(GLFW_SAMPLES, samples);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	GLFWwindow* window = 
@@ -54,23 +55,28 @@ int main()
 		return -1;
 	}
 
-	CubeMap cubemap(m_path + "/background/skybox");
 
 
 	// Globally // 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_STENCIL_TEST);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
+	unsigned int samples { 8 };
 
+	Screen screen((size_t)WINDOW_WIDTH, (size_t)WINDOW_HEIGHT);
+	CubeMap cubemap(m_path + "/background/skybox");
 
 	Shader fbShader     (s_path + "/screen/main/ver.glsl",     s_path + "/screen/main/frag.glsl"    );
 	Shader modelShader  (s_path + "/models/base/ver.glsl",     s_path + "/models/base/frag.glsl"    );
-	// Shader lightShader  (s_path + "/models/base/ver.glsl",     s_path + "/models/lights/frag.glsl"  );
-	// Shader outlineShader(s_path + "/effects/outline/ver.glsl", s_path + "/effects/outline/frag.glsl");
+	/*
+	Shader lightShader  (s_path + "/models/base/ver.glsl",     s_path + "/models/lights/frag.glsl"  );
+	Shader outlineShader(s_path + "/effects/outline/ver.glsl", s_path + "/effects/outline/frag.glsl");
+	*/
 	Shader cubemapShader(s_path + "/background/ver.glsl", s_path + "/background/frag.glsl");
 
 	fbShader.use();
@@ -82,10 +88,12 @@ int main()
 	light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 	light.power = 2.0f;
 
-	// Model model     (m_path + "/models/jumping_with_animation/Jumping Down.dae");
-	// Model model     (m_path + "/models/backpack/backpack.dae");
+	Model model     (m_path + "/models/backpack/backpack.dae");
+	/*
+	Model model     (m_path + "/models/jumping_with_animation/Jumping Down.dae");
 	Model model     (m_path + "/models/walking_cat/cat.dae");
-	// Model model     (m_path + "/models/gun/Handgun_dae.dae");
+	Model model     (m_path + "/models/gun/Handgun_dae.dae");
+	*/
 
 
 	cout << "<=============================================>" << endl;
@@ -121,14 +129,7 @@ int main()
 	mMatrix.model = glm::scale(mMatrix.model, glm::vec3(scale_factor));
 	mMatrix.model = glm::translate(mMatrix.model, model_location);
 
-	// oMatrix.model = glm::rotate(oMatrix.model, angle, angle_vector);
-	// oMatrix.model = glm::scale(oMatrix.model, glm::vec3(scale_factor));
-	// oMatrix.model = glm::translate(oMatrix.model, model_location);
 
-	// lMatrix.model = glm::scale(lMatrix.model, glm::vec3(scale_factor * 0.3f));
-
-
-	Screen screen((size_t)WINDOW_WIDTH, (size_t)WINDOW_HEIGHT);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -163,29 +164,27 @@ int main()
 			glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 		
 		mMatrix.projection = projection;
-		// oMatrix.projection = projection;
-		// lMatrix.projection = projection;
-
 		mMatrix.view = view;
-		// oMatrix.view = view;
-		// lMatrix.view = view;
 
-		// light.position = glm::vec3(sin(glfwGetTime()) * 1.0f, 0.0f, cos(glfwGetTime()) * 1.0f);
-		light.position = glm::vec3(1.0f, 1.0f, 1.0f);
+		light.position = glm::vec3(sin(glfwGetTime()) * 1.0f, 0.0f, cos(glfwGetTime()) * 1.0f);
+		// light.position = glm::vec3(1.0f, 1.0f, 1.0f);
 		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
 
-		screen.bind();
+		// screen.bind();
+		glBindFramebuffer(GL_FRAMEBUFFER, screen.msaa_id);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-		// 잠깐 Lightball은 없애는걸로
-		// glStencilMask(0x00);
-		// glFrontFace(GL_CW);
-		// lightShader.use();
-		// lightShader.setTransformMatrix("matrix", lMatrix);
-		// lightShader.setVec3("color", light.color);
-		// lightball.Draw(lightShader);
-
-		// glStencilMask(0x00);
+		glEnable(GL_DEPTH_TEST);
+		/*
+		잠깐 Lightball은 없애는걸로
+		glStencilMask(0x00);
+		glFrontFace(GL_CW);
+		lightShader.use();
+		lightShader.setTransformMatrix("matrix", lMatrix);
+		lightShader.setVec3("color", light.color);
+		lightball.Draw(lightShader);
+		glStencilMask(0x00);
+		*/
 
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glStencilMask(0xFF);
@@ -205,26 +204,37 @@ int main()
 		cubemap.Draw(cubemapShader);
 		glDepthFunc(GL_LESS);
 
-
-		// glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-		// glStencilMask(0x00);
-		// glDisable(GL_DEPTH_TEST);
-		// // glFrontFace(GL_CCW);
-		// outlineShader.use();
-		// outlineShader.setTransformMatrix("matrix", oMatrix);
-		// outlineShader.setFloat("outlineScale", 0.01f);
-		// outline.Draw(outlineShader);
-		// glEnable(GL_DEPTH_TEST);
-		// glStencilFunc(GL_ALWAYS, 0, 0xFF);
-		// glStencilMask(0xFF);
-
-		screen.detach();
-
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, screen.msaa_id);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, screen.screen_id);
+		glBlitFramebuffer(0, 0, screen.width, screen.height, 0, 0, screen.width, screen.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		glDisable(GL_DEPTH_TEST);
-		glClear(GL_COLOR_BUFFER_BIT);
 		screen.Draw(fbShader);
+
+
+		// screen.apply_msaa();
+		/*
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		glDisable(GL_DEPTH_TEST);
+		// glFrontFace(GL_CCW);
+		outlineShader.use();
+		outlineShader.setTransformMatrix("matrix", oMatrix);
+		outlineShader.setFloat("outlineScale", 0.01f);
+		outline.Draw(outlineShader);
 		glEnable(GL_DEPTH_TEST);
+		glStencilFunc(GL_ALWAYS, 0, 0xFF);
+		glStencilMask(0xFF);
+		*/
+
+		// screen.detach();
+
+
+		// glDisable(GL_DEPTH_TEST);
+		// glClear(GL_COLOR_BUFFER_BIT);
+		// screen.Draw(fbShader);
+		// glEnable(GL_DEPTH_TEST);
 
 
 
