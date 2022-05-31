@@ -683,7 +683,8 @@ void Screen::set()
 
 void Screen::bind()
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, this->screen_id);
+	glBindFramebuffer(GL_FRAMEBUFFER, this->msaa_id);
+	// glBindFramebuffer(GL_FRAMEBUFFER, this->screen_id);
 }
 
 void Screen::apply_msaa()
@@ -701,6 +702,11 @@ void Screen::detach()
 
 void Screen::Draw(Shader& shader)
 {
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, this->msaa_id);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->screen_id);
+	glBlitFramebuffer(0, 0, this->width, this->height, 0, 0, this->width, this->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDisable(GL_DEPTH_TEST);
 
 	shader.use();
 	glBindVertexArray(this->vao);
@@ -708,6 +714,7 @@ void Screen::Draw(Shader& shader)
 	glBindTexture(GL_TEXTURE_2D, this->color_buffer);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
+	glEnable(GL_DEPTH_TEST);
 	
 }
 

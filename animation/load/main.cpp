@@ -142,6 +142,7 @@ int main()
 	int counter { 0 };
 	while(!glfwWindowShouldClose(window))
 	{
+		screen.bind();
 
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -170,9 +171,6 @@ int main()
 		// light.position = glm::vec3(1.0f, 1.0f, 1.0f);
 		light.camera_position = camera.Position;
 		lMatrix.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light.position);
-
-		// screen.bind();
-		glBindFramebuffer(GL_FRAMEBUFFER, screen.msaa_id);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
 		/*
@@ -204,16 +202,7 @@ int main()
 		cubemap.Draw(cubemapShader);
 		glDepthFunc(GL_LESS);
 
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, screen.msaa_id);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, screen.screen_id);
-		glBlitFramebuffer(0, 0, screen.width, screen.height, 0, 0, screen.width, screen.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		glDisable(GL_DEPTH_TEST);
 		screen.Draw(fbShader);
-
-
-		// screen.apply_msaa();
 		/*
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 		glStencilMask(0x00);
@@ -228,16 +217,7 @@ int main()
 		glStencilMask(0xFF);
 		*/
 
-		// screen.detach();
-
-
-		// glDisable(GL_DEPTH_TEST);
-		// glClear(GL_COLOR_BUFFER_BIT);
-		// screen.Draw(fbShader);
-		// glEnable(GL_DEPTH_TEST);
-
-
-
+		screen.detach();
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
